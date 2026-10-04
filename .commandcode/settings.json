@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Shell(php -v 2>&1 | Select-Object -First 2; echo \"---NODE---\"; node -v 2>&1; echo \"---COMPOSER---\"; composer --version 2>&1 | Select-Object -First 1)"
+    ],
+    "deny": [],
+    "defaultMode": "default"
+  }
+}

@@ -149,6 +149,38 @@ class HandleInertiaRequests extends Middleware
             'currency' => fn () => $this->institution()
                 ? $this->institution()->currencySettings()
                 : Institution::DEFAULT_CURRENCY_SETTINGS,
+
+            /*
+             * LOCALE / i18n.
+             *
+             * The front end needs the catalogue for the ACTIVE locale and the
+             * list of languages to offer, and nothing more. Sharing the whole
+             * (flattened) message map here means a language change repaints the
+             * entire UI in the SAME round-trip - there is no second request and
+             * no client-side dictionary to keep in sync.
+             *
+             * `messages` are dotted keys (nav.dashboard); `phrases` is the
+             * English=>translation phrase book used for page-body literals.
+             */
+            'locale' => fn () => [
+                'current' => app()->getLocale(),
+                'fallback' => \App\Support\LocaleManager::fallback(),
+                'rtl' => (bool) (\App\Support\LocaleManager::meta(app()->getLocale())['rtl'] ?? false),
+                'supported' => \App\Support\LocaleManager::catalogue(),
+                'messages' => \App\Support\LocaleManager::messages(app()->getLocale()),
+                // The phrase book for PAGE BODIES (English source => translation).
+                'phrases' => \App\Support\LocaleManager::phrases(app()->getLocale()),
+            ],
+
+            /*
+             * HELP HINTS.
+             *
+             * A per-account preference (default on). Shared on every response
+             * so the hint badges can decide whether to render without a fetch.
+             */
+            'hints' => fn () => [
+                'enabled' => $user ? $user->hintsEnabled() : true,
+            ],
         ]);
     }
 }

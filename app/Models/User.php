@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
@@ -194,6 +195,53 @@ class User extends Authenticatable
     public static function themeAccents(): array
     {
         return Institution::THEMES;
+    }
+
+    /* ------------------------------------------------------------------ *
+     * Personal interface preferences (locale + help hints)
+     *
+     * Stored in the generic `user_settings` table rather than dedicated
+     * columns, so adding a preference never needs a migration. The row is
+     * created lazily on the first WRITE, so a user who never opens Settings
+     * costs no extra query.
+     * ------------------------------------------------------------------ */
+
+    /** The account's generic preference row. */
+    public function userSetting(): HasOne
+    {
+        return $this->hasOne(UserSetting::class);
+    }
+
+    /** Read a single preference value, with a fallback. */
+    public function setting(string $key, mixed $default = null): mixed
+    {
+        $settings = $this->userSetting?->settings ?? [];
+
+        return $settings[$key] ?? $default;
+    }
+
+    /** Persist a single preference, creating the row if it does not exist. */
+    public function setSetting(string $key, mixed $value): void
+    {
+        $row = $this->userSetting()->firstOrCreate([], ['settings' => []]);
+
+        $settings = $row->settings ?? [];
+        $settings[$key] = $value;
+
+        $row->settings = $settings;
+        $row->save();
+    }
+
+    /** The account's chosen locale, normalised to a supported code. */
+    public function locale(): string
+    {
+        return \App\Support\LocaleManager::normalise($this->setting('locale'));
+    }
+
+    /** Whether the in-body help hints are shown for this account (default on). */
+    public function hintsEnabled(): bool
+    {
+        return (bool) $this->setting('hints_enabled', true);
     }
 
     /**

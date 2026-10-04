@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import useMoney from '@/Utils/useMoney';
 import useTerminology from '@/Utils/useTerminology';
+import HelpHint from '@/Components/Help/HelpHint';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { Head, Link } from '@inertiajs/react';
 import {
     Chart as ChartJS,
@@ -82,7 +84,8 @@ export default function Dashboard({
     reconciliation = {},
 }) {
     const money = useMoney();
-    const { t, tTitle } = useTerminology();
+    const { t: term, tTitle } = useTerminology();
+    const { t } = useTranslation();
     const [expenseView, setExpenseView] = useState('doughnut');
 
     // Terminology-aware nouns, so a company sees "Employees" and a dorm
@@ -241,11 +244,12 @@ export default function Dashboard({
         <AuthenticatedLayout
             header={
                 <div>
-                    <h2 className="text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
-                        Meal &amp; Expense Overview
+                    <h2 className="flex items-center text-xl font-bold tracking-tight text-slate-900 sm:text-2xl">
+                        {t('dashboard.title')}
+                        <HelpHint hintKey="hints.dashboard_pool" />
                     </h2>
                     <p className="mt-0.5 text-xs font-medium text-slate-500">
-                        Shared pool, meal counts, and spending at a glance — {metrics.month_label}
+                        {t('dashboard.subtitle')} — {metrics.month_label}
                     </p>
                 </div>
             }
@@ -349,8 +353,11 @@ export default function Dashboard({
                 <div className="rounded-2xl border-slate-200 bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                         <div>
-                            <h3 className="text-base font-bold text-slate-900">Daily Meal & Money Trend</h3>
-                            <p className="text-xs text-slate-500">Meals eaten against money in and out, last 14 days</p>
+                            <h3 className="flex items-center text-base font-bold text-slate-900">
+                                {t('Daily Meal & Money Trend')}
+                                <HelpHint hintKey="hints.dashboard_trend" />
+                            </h3>
+                            <p className="text-xs text-slate-500">{t('Meals eaten against money in and out, last 14 days')}</p>
                         </div>
                     </div>
                     <div className="mt-4 h-72">
@@ -364,8 +371,11 @@ export default function Dashboard({
                     <div className="rounded-2xl border-slate-200 bg-white p-6 shadow-sm lg:col-span-2">
                         <div className="flex items-center justify-between">
                             <div>
-                                <h3 className="text-base font-bold text-slate-900">Expense Breakdown</h3>
-                                <p className="text-xs text-slate-500">This month by category</p>
+                                <h3 className="flex items-center text-base font-bold text-slate-900">
+                                    {t('Expense Breakdown')}
+                                    <HelpHint hintKey="hints.dashboard_breakdown" />
+                                </h3>
+                                <p className="text-xs text-slate-500">{t('This month by category')}</p>
                             </div>
                             <div className="inline-flex rounded-lg border-slate-200 bg-slate-50 p-0.5">
                                 {['doughnut', 'list'].map((view) => (
@@ -501,7 +511,7 @@ export default function Dashboard({
                                     ) : (
                                         <tr>
                                             <td colSpan="4" className="py-10 text-center text-xs italic text-slate-400">
-                                                No {t('members', 'members')} on the roster yet.
+                                                No {term('members', 'members')} on the roster yet.
                                             </td>
                                         </tr>
                                     )}

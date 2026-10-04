@@ -203,6 +203,7 @@ trait DuskDatabase
             'staff_broadcasts',
             'subscription_plans',
             'notifications',
+            'user_settings',
             'users',
             'institutions',
         ];

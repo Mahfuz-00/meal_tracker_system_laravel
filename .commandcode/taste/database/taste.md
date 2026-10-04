@@ -1,0 +1,10 @@
+# Database
+
+- Insists on absolute data preservation: never wipe, drop, or clear user data or the permanent Software Super Admin account, and protect the live application database from being reset by test runs. Confidence: 0.9
+- Wants the permanent Software Super Admin account to be auto-recreated if missing, via an idempotent seeder/migration that creates-only-when-absent and never overwrites an existing hashed password or other credentials. Confidence: 0.8
+- Wants the app database kept separate from the disposable test database so a test reset can never destroy real data, and states it as a mandatory rule: tests, seeders and migrations must run only against a dedicated, isolated test database (e.g. `.env.testing` / SQLite in-memory or a distinct instance) that is spun up, migrated, seeded and dropped per test run, while the existing development database and user data are never touched, wiped, truncated or reset. Confidence: 0.9
+- Prefers seeding/provisioning to be safe to run repeatedly without side effects (idempotent, non-destructive). Confidence: 0.7
+- Bans destructive database commands (migrate:fresh, db:wipe, migrate:refresh) specifically from the deploy/startup path — deploys and startup must never overwrite, truncate, or wipe the production database. Confidence: 0.85
+- Wants migrations to be additive/forward-only and seeding to run only on a genuinely fresh database. Confidence: 0.8
+- Wants optional fields made mandatory based on contextual UI state enforced only in the application layer (Form Request / validation rules such as required_if / requiredIf), deliberately keeping the database columns nullable and unchanged so the fields can later be toggled back to optional without a schema migration. Confidence: 0.9
+- Wants database-driven runtime lookups (e.g. a language registry or translation overrides) loaded once and cached per request/locale rather than queried per-string at render time, with the cache invalidated on change so an admin edit takes effect on the next request. Confidence: 0.6

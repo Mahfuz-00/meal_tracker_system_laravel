@@ -20,6 +20,7 @@ use App\Http\Controllers\SaaSAnalyticsController;
 use App\Http\Controllers\SubscriptionPlanController;
 use App\Http\Controllers\SubsidySourceController;
 use App\Http\Controllers\ThemeController;
+use App\Http\Controllers\LocaleController;
 use App\Http\Controllers\TrialManagementController;
 use App\Http\Controllers\TransactionController;
 use App\Http\Controllers\VendorController;
@@ -186,6 +187,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/settings/theme', [ThemeController::class, 'edit'])->name('settings.theme.edit');
     Route::put('/settings/theme', [ThemeController::class, 'update'])->name('settings.theme.update');
     Route::post('/settings/theme/reset', [ThemeController::class, 'reset'])->name('settings.theme.reset');
+
+    /*
+     * Language & preferences - a per-account interface setting available to
+     * EVERY authenticated user, exactly like the theme. The language switcher
+     * lives ONLY here (never in the top bar), and the same screen owns the
+     * global help-hints toggle.
+     */
+    Route::get('/settings/language', [LocaleController::class, 'edit'])->name('settings.language.edit');
+    Route::put('/settings/language', [LocaleController::class, 'update'])->name('settings.language.update');
+    Route::put('/settings/language/hints', [LocaleController::class, 'updateHints'])->name('settings.language.hints');
 
     // Audit trail / activity log. Super Admins see everything; Institution
     // Admins see their own institution (scoped in the controller).

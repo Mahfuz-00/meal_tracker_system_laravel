@@ -19,6 +19,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Inertia props are shared, so Institution::current() is correct for
             // every shared prop (terminology, currency, theme).
             \App\Http\Middleware\ResolveTenant::class,
+            // Applies the user's chosen locale BEFORE the Inertia props are
+            // shared, so the shared `locale` prop and the <html lang> agree.
+            \App\Http\Middleware\SetLocale::class,
             \App\Http\Middleware\HandleInertiaRequests::class,
             \Illuminate\Http\Middleware\AddLinkHeadersForPreloadedAssets::class,
             // Forces a user holding a temporary (demo) password to change it

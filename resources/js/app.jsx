@@ -4,9 +4,12 @@ import './bootstrap';
 import { createInertiaApp, router } from '@inertiajs/react';
 import { resolvePageComponent } from 'laravel-vite-plugin/inertia-helpers';
 import { createRoot } from 'react-dom/client';
+import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import GlobalLoadingIndicator from '@/Components/GlobalLoadingIndicator';
 import { FeedbackProvider } from '@/Components/Feedback/FeedbackProvider';
+import { HintsProvider } from '@/Components/Help/HintsProvider';
 import { applyThemeTokens, readLocalTheme } from '@/Components/ThemeProvider';
+import { LocaleProvider } from '@/i18n/LocaleProvider';
 
 const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
 
@@ -39,13 +42,38 @@ function resolveAndApply(props) {
     applyThemeTokens(institutionTheme, { persist: false });
 }
 
+/*
+ * PUBLIC / GUEST PAGES own their own layout (GuestLayout), so they are excluded
+ * from the persistent authenticated shell. Everything else gets it.
+ */
+const GUEST_PAGES = new Set(['Welcome']);
+const isGuestPage = (name) => GUEST_PAGES.has(name) || name.startsWith('Auth/');
+
 createInertiaApp({
     title: (title) => (title ? `${title} - ${appName}` : appName),
-    resolve: (name) =>
-        resolvePageComponent(
+    resolve: async (name) => {
+        const module = await resolvePageComponent(
             `./Pages/${name}.jsx`,
             import.meta.glob('./Pages/**/*.jsx'),
-        ),
+        );
+
+        const page = module.default;
+
+        /*
+         * PERSISTENT LAYOUT.
+         *
+         * Inertia renders `page.layout(page)` and keeps the LAYOUT component
+         * instance mounted across visits - only the page child swaps. Attaching
+         * the shell here (once, for every authenticated page) is what stops the
+         * sidebar from remounting/blinking on navigation. A page that needs a
+         * different shell can declare its own `layout` and this is skipped.
+         */
+        if (page && !page.layout && !isGuestPage(name)) {
+            page.layout = (child) => <AuthenticatedLayout>{child}</AuthenticatedLayout>;
+        }
+
+        return module;
+    },
     setup({ el, App, props }) {
         // 1. Initial paint: apply the theme before React mounts (no flash).
         resolveAndApply(props?.initialPage?.props);
@@ -56,6 +84,14 @@ createInertiaApp({
             resolveAndApply(event.detail.page.props);
         });
 
+        /*
+         * Shared payloads read ONCE for the providers that render OUTSIDE
+         * Inertia's <App> context (they cannot call usePage()). They follow
+         * later visits themselves via the router.
+         */
+        const locale = props.initialPage.props?.locale;
+        const hints = props.initialPage.props?.hints;
+
         const root = createRoot(el);
 
         root.render(
@@ -63,9 +99,13 @@ createInertiaApp({
             // messages and confirmations work identically on every screen,
             // including the guest pages.
             <FeedbackProvider>
-                <App {...props} />
-                {/* One central spinner for every async request. */}
-                <GlobalLoadingIndicator />
+                <LocaleProvider locale={locale}>
+                    <HintsProvider hints={hints}>
+                        <App {...props} />
+                        {/* One central spinner for every async request. */}
+                        <GlobalLoadingIndicator />
+                    </HintsProvider>
+                </LocaleProvider>
             </FeedbackProvider>
         );
     },

@@ -1,0 +1,15 @@
+# Code Style
+
+- Wants exhaustive, educational documentation comments on all code: PHPDoc blocks on every PHP class and method, and descriptive JSDoc/inline comments on every React component — explaining both *what* the code does and *why* it is written that way. Confidence: 0.9
+- Comments are pitched at a developer transitioning from mobile app development (Kotlin/Swift/Flutter) to Laravel/React web development, so framework-specific concepts and gotchas should be called out explicitly. Confidence: 0.85
+- Refactors must preserve 100% behavioral/functional parity — only file organization, readability, and comments may change, never the underlying business logic. Confidence: 0.9
+- Prefers strict separation of backend (Controllers, Models, Services under app/) from frontend views (resources/js/Pages and components), while keeping a cohesive monolith MVC structure. Confidence: 0.85
+- Prefers centralizing shared concerns into a single global source of truth (e.g. one theme engine) so a change in one place reflects everywhere, instead of duplicated per-component logic. Confidence: 0.8
+- Prefers closing genuine gaps over churning working code — favors lowest-regression-risk changes and avoids restructuring code that already works. Confidence: 0.7
+- Insists institution-facing features be strictly scoped to the owning institution_id and fully isolated from global/platform-level data. Confidence: 0.75
+- Values system dynamism — features configurable without code changes (theme, provisioning, currency, roles/permissions, rosters) — and wants structural hooks left ready for future extensibility such as per-institution custom form fields and configurable dashboard widgets, added additively rather than via re-architecture. Confidence: 0.7
+- On edit/modify forms, wants inputs pre-populated cleanly with the existing record's data; on new/create forms, fields stay blank. Confidence: 0.85
+- Treats unique identifier/key fields as immutable when editing: never auto-populate or regenerate a key in edit mode, and a blank/empty key submitted on an update must never overwrite or clear the stored value. Confidence: 0.9
+- Expects a platform-wide rename/rebrand to be carried through exhaustively across every surface — page titles, headings, navigation bars, email templates, page metadata, UI labels and docs — with no legacy name variants left anywhere. Confidence: 0.7
+- Prefers defensive, self-diagnosing code: wraps risky setup/bootstrap in explicit try/catch blocks that log caught errors with full stack traces rather than letting them fail silently, and instruments the runtime lifecycle with logging so a failure is attributable. Confidence: 0.55
+- Strongly prefers standard, out-of-the-box framework conventions over custom workarounds, and dislikes accumulated defensive "guard hacks" — explicitly rejects things like manual DOM existence checks, custom script wrappers, or moving framework-injected tags around to work around a crash. A diagnosed framework issue should be fixed to documented best practices, not papered over with custom scaffolding. Confidence: 0.8

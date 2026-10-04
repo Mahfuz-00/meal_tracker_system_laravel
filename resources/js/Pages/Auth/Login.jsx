@@ -5,10 +5,12 @@ import PrimaryButton from '@/Components/PrimaryButton';
 import TextInput from '@/Components/TextInput';
 import GuestLayout from '@/Layouts/GuestLayout';
 import useTerminology from '@/Utils/useTerminology';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { Head, Link, useForm } from '@inertiajs/react';
 
 export default function Login({ status, canResetPassword }) {
-    const { t } = useTerminology();
+    const { t: term } = useTerminology();
+    const { t } = useTranslation();
 
     const { data, setData, post, processing, errors, reset } = useForm({
         email: '',
@@ -26,10 +28,10 @@ export default function Login({ status, canResetPassword }) {
 
     return (
         <GuestLayout
-            heading="Welcome back"
-            subheading={`Sign in to manage your ${t('institution', 'institution').toLowerCase()} meals, deposits, and expenses.`}
+            heading={t('auth.welcome_back')}
+            subheading={t('auth.sign_in_subtitle')}
         >
-            <Head title="Log in" />
+            <Head title={t('Log in')} />
 
             {/* Secure Access Floating Badge */}
             <div className="mb-6 text-center">
@@ -38,7 +40,7 @@ export default function Login({ status, canResetPassword }) {
                         <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-indigo-400 opacity-60" />
                         <span className="relative inline-flex h-2 w-2 rounded-full bg-indigo-500" />
                     </span>
-                    Secure Access
+                    {t('auth.secure_access')}
                 </span>
             </div>
 
@@ -53,7 +55,7 @@ export default function Login({ status, canResetPassword }) {
 
             <form onSubmit={submit} className="space-y-5">
                 <div>
-                    <InputLabel htmlFor="email" value="Email Address" className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400" />
+                    <InputLabel htmlFor="email" value={t('auth.email')} className="mb-1.5 text-[11px] font-bold uppercase tracking-wider text-slate-400" />
 
                     <TextInput
                         id="email"
@@ -72,13 +74,13 @@ export default function Login({ status, canResetPassword }) {
 
                 <div>
                     <div className="mb-1.5 flex items-center justify-between">
-                        <InputLabel htmlFor="password" value="Password" className="text-[11px] font-bold uppercase tracking-wider text-slate-400" />
+                        <InputLabel htmlFor="password" value={t('auth.password')} className="text-[11px] font-bold uppercase tracking-wider text-slate-400" />
                         {canResetPassword && (
                             <Link
                                 href={route('password.request')}
                                 className="text-xs font-semibold text-indigo-600 transition-colors hover:text-indigo-700"
                             >
-                                Forgot password?
+                                {t('auth.forgot')}
                             </Link>
                         )}
                     </div>
@@ -108,7 +110,7 @@ export default function Login({ status, canResetPassword }) {
                             }
                         />
                         <span className="text-xs font-semibold text-slate-600">
-                            Remember me on this device
+                            {t('auth.remember')}
                         </span>
                     </label>
                 </div>
@@ -127,7 +129,7 @@ export default function Login({ status, canResetPassword }) {
                                 Signing in...
                             </span>
                         ) : (
-                            'Sign In to Dashboard'
+                            t('auth.sign_in')
                         )}
                     </PrimaryButton>
                 </div>

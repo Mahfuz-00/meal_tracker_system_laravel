@@ -72,6 +72,28 @@ trait DuskSupport
     }
 
     /**
+     * Authenticate through the REAL login form.
+     *
+     * Preferred over `loginAs()` here because the browser `loginAs()` shortcut
+     * depends on Dusk's `/_dusk/login` route persisting a session, which does not
+     * survive reliably against an isolated `artisan serve` process. Driving the
+     * real form is closer to what a user does and works end-to-end.
+     */
+    protected function loginViaForm(Browser $browser, User $user, string $password = 'password'): void
+    {
+        $browser->visit('/login')
+            ->waitFor('#email', 20)
+            ->type('#email', $user->email)
+            ->type('#password', $password)
+            ->pause(250);
+
+        // React binds onSubmit to the form, so submit through the DOM.
+        $browser->script("document.querySelector('form').requestSubmit();");
+
+        $browser->waitForLocation('/dashboard', 20);
+    }
+
+    /**
      * An authenticated HTTP test client for server-side assertions.
      *
      * WHY THIS EXISTS

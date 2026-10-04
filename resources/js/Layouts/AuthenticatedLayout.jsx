@@ -1,25 +1,38 @@
 import Sidebar from '@/Components/Sidebar';
 import ThemeProvider from '@/Components/ThemeProvider';
 import NotificationBell from '@/Components/NotificationBell';
+import ShellContext from '@/Layouts/shellContext';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { Link, usePage } from '@inertiajs/react';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 /**
  * Responsive application shell.
  *
- * Phone / tablet : the sidebar becomes an off-canvas drawer with a backdrop,
- *                  opened from a sticky top bar.
- * Desktop (lg+)  : the sidebar is docked and always visible.
- * Ultra-wide     : content is centred with a max width so tables stay readable
- *                  instead of stretching edge to edge.
+ * This is the PERSISTENT shell: app.jsx assigns it as the default layout for
+ * every authenticated page (`page.layout = p => <AuthenticatedLayout>{p}</…>`),
+ * so Inertia keeps ONE instance mounted across client-side navigations and only
+ * the page child swaps. The sidebar therefore never blinks, re-fetches or loses
+ * its open/closed state when moving between modules.
+ *
+ * NESTED DEGRADATION
+ * ------------------
+ * A page may still render its own `<AuthenticatedLayout header=…>`, and
+ * MealsLayout / SettingsLayout wrap it too. When one of those renders INSIDE the
+ * persistent shell (ShellContext === true) it must NOT build a second shell -
+ * it collapses to just its header + content. That is what lets the persistent
+ * shell coexist with the existing per-page layouts during the migration.
  */
 export default function AuthenticatedLayout({ header, children }) {
     const { auth, institution, tenant } = usePage().props;
+    const { t } = useTranslation();
     const user = auth?.user;
+
+    const inShell = useContext(ShellContext);
 
     const [drawerOpen, setDrawerOpen] = useState(false);
 
-    // Close the drawer whenever the route changes (i.e. a nav link is tapped).
+    // Close the drawer whenever the shell re-renders (i.e. a nav link is tapped).
     useEffect(() => {
         setDrawerOpen(false);
     }, [children]);
@@ -30,14 +43,25 @@ export default function AuthenticatedLayout({ header, children }) {
         return () => { document.body.style.overflow = ''; };
     }, [drawerOpen]);
 
+    // Already inside the persistent shell: render header + content only.
+    if (inShell) {
+        return (
+            <>
+                {header && <header className="mb-4">{header}</header>}
+                {children}
+            </>
+        );
+    }
+
     return (
+        <ShellContext.Provider value={true}>
         <ThemeProvider>
         {/* The shell itself reads the theme tokens, so flipping dark mode recolours
             the page background and default text instantly. */}
         <div className="min-h-screen" style={{ backgroundColor: 'var(--bg-color)', color: 'var(--text-primary)' }}>
             <div className="flex min-h-screen">
                 {/* Docked sidebar (desktop) */}
-                <div className="hidden lg:block lg:flex-shrink-0">
+                <div className="hidden lg:block lg:flex-shrink-0" data-testid="app-sidebar-desktop">
                     <Sidebar user={user} />
                 </div>
 
@@ -52,6 +76,7 @@ export default function AuthenticatedLayout({ header, children }) {
                 <div
                     className={`fixed inset-y-0 left-0 z-50 transform transition-transform duration-300 lg:hidden ${drawerOpen ? 'translate-x-0' : '-translate-x-full'
                         }`}
+                    data-testid="app-sidebar-mobile"
                 >
                     <Sidebar user={user} onNavigate={() => setDrawerOpen(false)} />
                 </div>
@@ -66,7 +91,7 @@ export default function AuthenticatedLayout({ header, children }) {
                         <button
                             type="button"
                             onClick={() => setDrawerOpen((open) => !open)}
-                            aria-label="Open navigation"
+                            aria-label={t('Open navigation')}
                             aria-expanded={drawerOpen}
                             className="inline-flex h-10 w-10 items-center justify-center rounded-xl border-slate-200 text-slate-600 transition-colors hover:bg-slate-50"
                         >
@@ -75,7 +100,7 @@ export default function AuthenticatedLayout({ header, children }) {
                             </svg>
                         </button>
                         <span className="truncate text-sm font-bold text-slate-800">
-                            {institution?.name || 'Meal Manager'}
+                            {institution?.name || t('Meal Management')}
                         </span>
                     </div>
 
@@ -91,7 +116,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
                                     <span>
-                                        Viewing <strong className="font-semibold">{institution?.name}</strong> as a switched workspace.
+                                        {t('Viewing')} <strong className="font-semibold">{institution?.name}</strong> {t('as a switched workspace.')}
                                     </span>
                                 </div>
                                 <Link
@@ -100,7 +125,7 @@ export default function AuthenticatedLayout({ header, children }) {
                                     as="button"
                                     className="inline-flex items-center gap-1.5 self-start rounded-lg bg-amber-600 px-3.5 py-1.5 text-xs font-bold text-white transition-colors hover:bg-amber-700 sm:self-auto"
                                 >
-                                    Exit to platform view
+                                    {t('Exit to platform view')}
                                 </Link>
                             </div>
                         )}
@@ -121,10 +146,9 @@ export default function AuthenticatedLayout({ header, children }) {
                             </div>
                         </div>
 
-                        {/* Keyed by the current route so a page swap
-                            animates in smoothly without the shell (sidebar,
-                            header) ever remounting or flickering. */}
-                        <main key={typeof window !== 'undefined' ? window.location.pathname : 'page'} className="animate-page-in">
+                        {/* The page child swaps here on navigation; the shell
+                            (sidebar, header, bell) is never remounted. */}
+                        <main className="animate-page-in">
                             {children}
                         </main>
                     </div>
@@ -132,5 +156,6 @@ export default function AuthenticatedLayout({ header, children }) {
             </div>
         </div>
         </ThemeProvider>
+        </ShellContext.Provider>
     );
 }

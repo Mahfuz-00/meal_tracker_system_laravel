@@ -5,6 +5,7 @@ import Icon from '@/Components/Icon';
 import useCan from '@/Utils/can';
 import useTerminology from '@/Utils/useTerminology';
 import usePlatformBranding from '@/Utils/usePlatformBranding';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { NAV_SECTIONS, buildVisibleNav } from '@/Utils/navItems';
 
 /* ------------------------------------------------------------------ *
@@ -48,7 +49,8 @@ const iconToneClasses = (active, nested = false) => {
 
 export default function Sidebar({ user, onNavigate }) {
     const { can, hasRole, isSuperAdmin } = useCan();
-    const { t, institution } = useTerminology();
+    const { t: term, institution } = useTerminology();
+    const { t } = useTranslation();
     const { controlCenter, adminSubtitle, logoUrl } = usePlatformBranding();
     const { auth, tenant } = usePage().props;
 
@@ -77,7 +79,7 @@ export default function Sidebar({ user, onNavigate }) {
 
     // Resolve a nav item's visible label: an explicit termKey follows the
     // institution type, otherwise the static label stands.
-    const itemLabel = (item) => (item.termKey ? t(item.termKey, item.label) : item.label);
+    const itemLabel = (item) => (item.termKey ? term(item.termKey, item.label) : t(item.label));
 
     // Everything permission-related happens here, once per render.
     const sections = useMemo(
@@ -188,7 +190,7 @@ export default function Sidebar({ user, onNavigate }) {
                         <div key={section.heading || sectionIndex} className="space-y-1.5">
                             {section.heading && (
                                 <p className="px-3.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                                    {section.heading}
+                                    {t(section.heading)}
                                 </p>
                             )}
 

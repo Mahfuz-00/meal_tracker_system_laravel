@@ -2,6 +2,8 @@ import React from 'react';
 import MealsLayout from '@/Layouts/MealsLayout';
 import useCan from '@/Utils/can';
 import useTerminology from '@/Utils/useTerminology';
+import HelpHint from '@/Components/Help/HelpHint';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { Head, Link, router, usePage } from '@inertiajs/react';
 
 const MEAL_COLUMNS = [
@@ -11,7 +13,8 @@ const MEAL_COLUMNS = [
 ];
 
 export default function Index({ entries, students, filters, dayTotals }) {
-    const { t, tTitle } = useTerminology();
+    const { t: term, tTitle } = useTerminology();
+    const { t } = useTranslation();
     const { can } = useCan();
     const { flash } = usePage().props;
     const canEntry = can('meals.entry');
@@ -28,8 +31,8 @@ export default function Index({ entries, students, filters, dayTotals }) {
 
     return (
         <MealsLayout
-            title="Meal Entries"
-            description="What each student ate, day by day. Totals feed directly into meal cost calculations."
+            title={t('Meal Entries')}
+            description={t('What each student ate, day by day. Totals feed directly into meal cost calculations.')}
             actions={
                 canEntry && (
                     <Link
@@ -72,8 +75,9 @@ export default function Index({ entries, students, filters, dayTotals }) {
                         </div>
                     ))}
                     <div className="rounded-xl border-slate-200 bg-white p-4 shadow-sm">
-                        <div className="text-[11px] font-semibold uppercase tracking-wider text-slate-400">
-                            Total Meals
+                        <div className="flex items-center text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                            {t('Total Meals')}
+                            <HelpHint hintKey="hints.meal_entries" />
                         </div>
                         <div className="mt-1 text-xl font-bold text-indigo-600">
                             {dayTotals.total ?? 0}
@@ -104,7 +108,7 @@ export default function Index({ entries, students, filters, dayTotals }) {
                             onChange={(event) => applyFilters({ student: event.target.value })}
                             className="rounded-lg border-slate-300 text-sm text-slate-900 focus:border-indigo-500 focus:ring-indigo-500"
                         >
-                            <option value="">All {t('members', 'members')}</option>
+                            <option value="">All {term('members', 'members')}</option>
                             {(students || []).map((student) => (
                                 <option key={student.id} value={student.id}>
                                     {student.name}

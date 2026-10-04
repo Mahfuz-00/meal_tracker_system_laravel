@@ -1,0 +1,42 @@
+<?php
+
+/*
+| Common UI vocabulary shared across every screen.
+*/
+return [
+    'save' => 'Save',
+    'saving' => 'Saving…',
+    'cancel' => 'Cancel',
+    'close' => 'Close',
+    'delete' => 'Delete',
+    'edit' => 'Edit',
+    'create' => 'Create',
+    'update' => 'Update',
+    'search' => 'Search',
+    'filter' => 'Filter',
+    'reset' => 'Reset',
+    'back' => 'Back',
+    'next' => 'Next',
+    'finish' => 'Finish',
+    'loading' => 'Loading…',
+    'no_results' => 'Nothing to show',
+    'confirm' => 'Are you sure?',
+    'yes' => 'Yes',
+    'no' => 'No',
+    'optional' => 'optional',
+    'required' => 'required',
+    'all' => 'All',
+    'actions' => 'Actions',
+    'status' => 'Status',
+    'total' => 'Total',
+    'view' => 'View',
+    'add' => 'Add',
+    'remove' => 'Remove',
+    'submit' => 'Submit',
+    'apply' => 'Apply',
+    'dismiss' => 'Dismiss',
+    'enabled' => 'Enabled',
+    'disabled' => 'Disabled',
+    'on' => 'On',
+    'off' => 'Off',
+];
