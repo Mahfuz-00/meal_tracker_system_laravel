@@ -23,6 +23,8 @@ const TABS = [
     { label: 'Meal Entries', route: 'meals.entries.index', match: 'meals.entries.*', permission: 'meals.entry' },
     { label: 'Expenses', route: 'meals.expenses.index', match: 'meals.expenses.*', permission: 'meals.expense' },
     { label: 'Reports', route: 'meals.reports.index', match: 'meals.reports.*', permission: 'meals.reports' },
+    { label: 'Meal Schedules', route: 'meals.schedules.index', match: 'meals.schedules.*', permission: 'meals.manage' },
+    { label: 'Voting & Suggestions', route: 'meals.voting.index', match: 'meals.voting.*', permission: 'meals.manage' },
 ];
 
 export default function MealsLayout({ title, description, actions, hint = null, children }) {

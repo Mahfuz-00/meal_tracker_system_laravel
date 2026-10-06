@@ -21,6 +21,8 @@ class RolesAndPermissionsSeeder extends Seeder
             'meals' => [
                 'meals.view', 'meals.entry', 'meals.manage',
                 'meals.deposit', 'meals.expense', 'meals.reports',
+                // Member meal scheduling (off/on notifications) + voting/suggestions.
+                'meals.schedule', 'meals.vote', 'meals.voting.manage',
             ],
             'students' => [
                 'students.view', 'students.manage', 'students.invite',
@@ -163,7 +165,9 @@ class RolesAndPermissionsSeeder extends Seeder
         // admin can still revoke access. Sees subsidy data but does not manage it.
         $managerPerms = array_merge(
             $definitions['transactions'],
-            $definitions['meals'],
+            // Every meals permission EXCEPT configuring the voting options - that
+            // is an administrator-only settings action (meals.voting.manage).
+            array_values(array_diff($definitions['meals'], ['meals.voting.manage'])),
             $definitions['students'],
             $definitions['departments'],
             $definitions['vendors'],
@@ -178,7 +182,7 @@ class RolesAndPermissionsSeeder extends Seeder
         // Member: limited view permissions only - sees their own meals and
         // deposits, nothing administrative.
         // Members can view their own data and raise claims, nothing more.
-        $member->syncPermissions(['meals.view', 'transactions.view', 'claims.view', 'claims.submit', 'notifications.view']);
+        $member->syncPermissions(['meals.view', 'transactions.view', 'claims.view', 'claims.submit', 'notifications.view', 'meals.schedule', 'meals.vote']);
 
         // Assign the top role to the first seed user (if exists).
         $user = User::first();

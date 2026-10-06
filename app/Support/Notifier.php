@@ -4,6 +4,8 @@ namespace App\Support;
 
 use App\Models\Claim;
 use App\Models\Institution;
+use App\Models\MealSchedule;
+use App\Models\MealSuggestion;
 use App\Models\Student;
 use App\Models\User;
 use App\Notifications\AppNotification;
@@ -143,6 +145,41 @@ class Notifier
                 'claim_id' => $claim->id,
                 'amount' => $amount,
             ],
+            $actor?->id,
+        );
+    }
+
+    /** A member set/changed their meal schedule: tell their manager + admins. */
+    public static function mealScheduleSubmitted(MealSchedule $schedule, ?User $actor = null): void
+    {
+        $student = $schedule->student;
+        $meals = implode(', ', $schedule->mealLabels()) ?: 'meals';
+
+        static::send(
+            static::memberOversight($student),
+            'meal_schedule',
+            'Meal schedule from ' . ($student?->name ?? 'a member'),
+            ($schedule->taking_meals ? 'Will take ' : 'Will skip ') . $meals
+                . ' from ' . $schedule->start_date?->format('j M Y')
+                . ($schedule->end_date && ! $schedule->end_date->isSameDay($schedule->start_date)
+                    ? ' to ' . $schedule->end_date->format('j M Y')
+                    : ''),
+            ['url' => route('meals.schedules.index', [], false), 'schedule_id' => $schedule->id],
+            $actor?->id,
+        );
+    }
+
+    /** A member submitted a meal suggestion: tell their manager + admins. */
+    public static function mealSuggestionSubmitted(MealSuggestion $suggestion, ?User $actor = null): void
+    {
+        $student = $suggestion->student;
+
+        static::send(
+            static::memberOversight($student),
+            'meal_suggestion',
+            'Meal suggestion from ' . ($student?->name ?? 'a member'),
+            $suggestion->title,
+            ['url' => route('meals.voting.index', [], false), 'suggestion_id' => $suggestion->id],
             $actor?->id,
         );
     }

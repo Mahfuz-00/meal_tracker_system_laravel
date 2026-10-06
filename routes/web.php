@@ -27,6 +27,9 @@ use App\Http\Controllers\VendorController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\SettingsController;
+use App\Http\Controllers\MealScheduleController;
+use App\Http\Controllers\MealVotingController;
+use App\Http\Controllers\MealVoteOptionController;
 use App\Http\Controllers\Meals\DepartmentController;
 use App\Http\Controllers\Meals\StudentController;
 use App\Http\Controllers\Meals\DepositController;
@@ -96,6 +99,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/deposits', [MemberDashboardController::class, 'deposits'])->name('deposits');
         // Personal analytics, scoped exclusively to this member.
         Route::get('/analytics', [MemberDashboardController::class, 'analytics'])->name('analytics');
+
+        // Meal scheduling: tell the manager which meals I will / won't take.
+        Route::get('/schedule', [MealScheduleController::class, 'memberIndex'])->name('schedule');
+        Route::post('/schedule', [MealScheduleController::class, 'store'])->name('schedule.store');
+        Route::delete('/schedule/{mealSchedule}', [MealScheduleController::class, 'destroy'])->name('schedule.destroy');
+
+        // Meal voting (admin-configured options) + member suggestions.
+        Route::get('/voting', [MealVotingController::class, 'memberIndex'])->name('voting');
+        Route::post('/voting/vote', [MealVotingController::class, 'vote'])->name('voting.vote');
+        Route::post('/voting/suggest', [MealVotingController::class, 'suggest'])->name('voting.suggest');
     });
 
     // Forced / voluntary password change. Reachable even while a user still
@@ -308,6 +321,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::delete('/settings/subsidy-sources/{subsidySource}', [SubsidySourceController::class, 'destroy'])
         ->name('settings.subsidy-sources.destroy')
         ->middleware('permission:subsidies.manage');
+
+    /*
+     * MEAL VOTING OPTIONS - the choices members vote on, explicitly configured
+     * by administrators (never hard-coded). Gated to `meals.voting.manage`
+     * (Institution Admins + SSA), so a Meal Manager can see the board but not
+     * change the options.
+     */
+    Route::get('/settings/meal-voting', [MealVoteOptionController::class, 'index'])
+        ->name('settings.meal-voting.index')
+        ->middleware('permission:meals.voting.manage');
+    Route::post('/settings/meal-voting', [MealVoteOptionController::class, 'store'])
+        ->name('settings.meal-voting.store')
+        ->middleware('permission:meals.voting.manage');
+    Route::put('/settings/meal-voting/{voteOption}', [MealVoteOptionController::class, 'update'])
+        ->name('settings.meal-voting.update')
+        ->middleware('permission:meals.voting.manage');
+    Route::delete('/settings/meal-voting/{voteOption}', [MealVoteOptionController::class, 'destroy'])
+        ->name('settings.meal-voting.destroy')
+        ->middleware('permission:meals.voting.manage');
 
     // Settings - the Software Super Admin's institution registry: every
     // institution on the platform with its administrators.
@@ -542,6 +574,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('students/{student}/invite', [StudentController::class, 'invite'])
             ->name('students.invite')
             ->middleware('permission:students.invite');
+
+        // Member meal schedules board ("who is off today") - managers/admins.
+        Route::get('schedules', [MealScheduleController::class, 'managerIndex'])
+            ->name('schedules.index')->middleware('permission:meals.manage');
+
+        // Meal voting tallies + member suggestions - managers/admins.
+        Route::get('voting', [MealVotingController::class, 'managerIndex'])
+            ->name('voting.index')->middleware('permission:meals.manage');
     });
 });
 

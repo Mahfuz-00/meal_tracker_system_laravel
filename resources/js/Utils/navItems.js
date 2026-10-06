@@ -89,6 +89,24 @@ export const NAV_SECTIONS = [
                 roles: ['Member'],
                 rolesOnly: true,
             },
+            {
+                // Tell the manager which meals I will / won't take.
+                label: 'Meal Schedule',
+                route: 'member.schedule',
+                match: 'member.schedule',
+                icon: 'clipboard',
+                roles: ['Member'],
+                rolesOnly: true,
+            },
+            {
+                // Vote on admin-configured options + submit meal suggestions.
+                label: 'Meal Voting',
+                route: 'member.voting',
+                match: 'member.voting',
+                icon: 'chart',
+                roles: ['Member'],
+                rolesOnly: true,
+            },
         ],
     },
     /* ------------------------------------------------------------------ *
@@ -270,6 +288,22 @@ export const NAV_SECTIONS = [
                 icon: 'clipboard',
                 permission: 'claims.review',
             },
+            {
+                // Member off/on schedules ("who is off today").
+                label: 'Meal Schedules',
+                route: 'meals.schedules.index',
+                match: 'meals.schedules.*',
+                icon: 'clipboard',
+                permission: 'meals.manage',
+            },
+            {
+                // Voting tallies + member suggestions.
+                label: 'Voting & Suggestions',
+                route: 'meals.voting.index',
+                match: 'meals.voting.*',
+                icon: 'chart',
+                permission: 'meals.manage',
+            },
         ],
     },
     /* ------------------------------------------------------------------ *
@@ -364,6 +398,14 @@ export const NAV_SECTIONS = [
                         route: 'settings.subsidy-sources.index',
                         match: 'settings.subsidy-sources.*',
                         permission: 'subsidies.manage',
+                    },
+                    {
+                        // Admin-configured meal voting choices.
+                        label: 'Meal Voting',
+                        route: 'settings.meal-voting.index',
+                        match: 'settings.meal-voting.*',
+                        icon: 'chart',
+                        permission: 'meals.voting.manage',
                     },
                     {
                         label: 'Activity Log',
