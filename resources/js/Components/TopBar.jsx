@@ -1,21 +1,23 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 import NotificationBell from '@/Components/NotificationBell';
 import usePlatformBranding from '@/Utils/usePlatformBranding';
+import useBreadcrumbs from '@/Utils/useBreadcrumbs';
+import useTerminology from '@/Utils/useTerminology';
 import { useTranslation } from '@/i18n/LocaleProvider';
 
 /**
  * The application TOP BAR.
  *
  * Sits above the main content body, in the main column only - so it never
- * affects the persistent sidebar. It carries, left to right:
- *   - the mobile drawer trigger (the docked sidebar has no trigger on desktop),
- *   - the page CONTEXT: the workspace/platform name, plus the current page's own
- *     header portaled in from the page (see TopBarSlotContext),
+ * affects the persistent sidebar. Left to right:
+ *   - the mobile drawer trigger,
+ *   - DYNAMIC breadcrumbs: workspace / module / sub-module, resolved from the
+ *     active route (never hardcoded), plus the current date,
+ *   - the page's own header, portaled in (TopBarSlotContext),
  *   - the notification bell and the user profile menu.
  *
- * It is rendered ONCE by the persistent shell, so it does not remount between
- * modules any more than the sidebar does.
+ * Rendered ONCE by the persistent shell, so it does not remount between modules.
  */
 function UserMenu({ user }) {
     const { t } = useTranslation();
@@ -112,15 +114,46 @@ function UserMenu({ user }) {
 export default function TopBar({ slotRef = null, onMenuClick = null, menuOpen = false }) {
     const { institution, tenant, auth } = usePage().props;
     const { controlCenter } = usePlatformBranding();
-    const { t } = useTranslation();
+    const { t, locale } = useTranslation();
+    const { t: term } = useTerminology();
+    const crumbs = useBreadcrumbs();
 
     const isSuper = !!auth?.user?.is_super_admin;
-    const contextName = isSuper && !tenant?.switched ? controlCenter : (institution?.name || controlCenter);
+    const workspace = isSuper && !tenant?.switched ? controlCenter : (institution?.name || controlCenter);
+
+    // Translate a nav entry: an explicit termKey follows institution terminology,
+    // otherwise the static label goes through the JSON language hub.
+    const label = (entry) => (entry ? (entry.termKey ? term(entry.termKey, entry.label) : t(entry.label)) : null);
+
+    // Breadcrumb trail: workspace / section / item [/ child]. Deduped + trimmed.
+    const trail = useMemo(() => {
+        const parts = [workspace];
+
+        if (crumbs?.section?.heading) parts.push(t(crumbs.section.heading));
+        if (crumbs?.item) parts.push(label(crumbs.item));
+        if (crumbs?.child) parts.push(t(crumbs.child.label));
+
+        return parts.filter(Boolean);
+    }, [workspace, crumbs, locale]);
+
+    // Localised "today" for the top-right context.
+    const today = useMemo(() => {
+        try {
+            return new Intl.DateTimeFormat(locale === 'bn' ? 'bn-BD' : 'en-GB', {
+                weekday: 'short',
+                day: 'numeric',
+                month: 'short',
+                year: 'numeric',
+            }).format(new Date());
+        } catch (e) {
+            return new Date().toDateString();
+        }
+    }, [locale]);
 
     return (
         <div
             data-testid="app-topbar"
-            className="sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-2.5 backdrop-blur"
+            className="sticky top-0 z-20 flex items-center gap-3 border-b px-4 py-2 backdrop-blur"
             style={{ backgroundColor: 'var(--surface)', borderColor: 'var(--border-color)' }}
         >
             <button
@@ -135,13 +168,31 @@ export default function TopBar({ slotRef = null, onMenuClick = null, menuOpen = 
                 </svg>
             </button>
 
-            {/* Context: workspace name (overline) + the page's own header, portaled in. */}
             <div className="min-w-0 flex-1">
-                <p className="truncate text-[10px] font-bold uppercase tracking-wider text-slate-400">
-                    {contextName}
-                </p>
+                {/* Dynamic breadcrumb (module / sub-module), not hardcoded text. */}
+                <nav
+                    aria-label="Breadcrumb"
+                    data-testid="topbar-breadcrumb"
+                    className="flex items-center gap-1.5 truncate text-[10px] font-bold uppercase tracking-wider text-slate-400"
+                >
+                    {trail.map((part, index) => (
+                        <span key={`${part}-${index}`} className="flex items-center gap-1.5">
+                            {index > 0 && <span className="text-slate-300">/</span>}
+                            <span className={index === trail.length - 1 ? 'text-slate-600' : ''}>{part}</span>
+                        </span>
+                    ))}
+                </nav>
+
+                {/* The page's own header, portaled in (title + subtitle). */}
                 <div ref={slotRef} data-testid="topbar-context" className="min-w-0" />
             </div>
+
+            <span
+                data-testid="topbar-date"
+                className="hidden flex-shrink-0 rounded-lg border border-slate-200 px-2.5 py-1 text-[11px] font-semibold text-slate-500 lg:inline-block"
+            >
+                {today}
+            </span>
 
             <div className="flex flex-shrink-0 items-center gap-2">
                 <NotificationBell />

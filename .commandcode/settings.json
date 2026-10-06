@@ -7,7 +7,8 @@
       "Shell(php artisan serve --host=127.0.0.1 --port=8899)",
       "Shell(php artisan config:clear)",
       "Shell(php artisan dusk --filter=PersistentSidebarNavigation|SsoAndLoginRedesign|MultiLanguagePreferences|UserOnboardingAndHints)",
-      "Shell(del /Q \"tests\\Browser\\screenshots\\failure-*.png\" 2>NUL & echo cleaned)"
+      "Shell(del /Q \"tests\\Browser\\screenshots\\failure-*.png\" 2>NUL & echo cleaned)",
+      "Shell(npm:*)"
     ],
     "deny": [],
     "defaultMode": "default"

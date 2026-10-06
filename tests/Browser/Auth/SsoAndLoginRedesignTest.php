@@ -54,6 +54,17 @@ class SsoAndLoginRedesignTest extends DuskTestCase
             );
             $this->assertStringContainsString('NomNomytics', (string) ($cardText[0] ?? ''), 'The login card brand is inconsistent.');
 
+            // Vertical rhythm: clear breathing room between the brand name and
+            // the headline (they must not be crowded together).
+            $gap = $browser->script(
+                "var panel = document.querySelector('[data-testid=login-intro-panel]');"
+                . " var brand = panel.querySelector('a');"
+                . " var headline = panel.querySelector('h2');"
+                . " if (!brand || !headline) return -1;"
+                . " return Math.round(headline.getBoundingClientRect().top - brand.getBoundingClientRect().bottom);"
+            );
+            $this->assertGreaterThanOrEqual(40, (int) ($gap[0] ?? 0), 'Intro panel brand→headline spacing is too tight.');
+
             // Graceful absence of SSO when no providers are configured.
             $browser->assertMissing('[data-testid=sso-providers]');
         });

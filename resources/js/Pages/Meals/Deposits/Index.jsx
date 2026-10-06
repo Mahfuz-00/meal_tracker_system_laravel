@@ -5,6 +5,7 @@ import Field from '@/Components/UI/Field';
 import useCan from '@/Utils/can';
 import useMoney from '@/Utils/useMoney';
 import useTerminology from '@/Utils/useTerminology';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { Spinner } from '@/Components/UI/Loading';
 import { useFeedback } from '@/Components/Feedback/FeedbackProvider';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
@@ -55,6 +56,7 @@ function Flash({ success, error }) {
 export default function Index({ deposits, students, kinds, filteredTotal, personalTotal, subsidyAllocated, subsidyGrants, filters }) {
     const { can } = useCan();
     const { t, tTitle } = useTerminology();
+    const { t: translate } = useTranslation();
     const { flash } = usePage().props;
     const money = useMoney();
     const { confirm } = useFeedback();
@@ -169,9 +171,9 @@ export default function Index({ deposits, students, kinds, filteredTotal, person
 
     return (
         <MealsLayout
-            title="Deposits"
+            title={translate('Deposits')}
             hint="hints.deposits"
-            description="Money each student pays into the common pool. Every deposit is also recorded as a cash-in transaction."
+            description={translate('Money each student pays into the common pool. Every deposit is also recorded as a cash-in transaction.')}
             actions={
                 <div className="flex flex-wrap items-center gap-2">
                     {canExport && (

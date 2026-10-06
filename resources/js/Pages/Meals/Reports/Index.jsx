@@ -3,6 +3,7 @@ import MealsLayout from '@/Layouts/MealsLayout';
 import useCan from '@/Utils/can';
 import useMoney from '@/Utils/useMoney';
 import useTerminology from '@/Utils/useTerminology';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { LoadingOverlay } from '@/Components/UI/Loading';
 import { Head, router } from '@inertiajs/react';
 
@@ -29,6 +30,7 @@ function SummaryCard({ label, value, tone = 'text-slate-900', hint }) {
 export default function Index({ summary, students, months, filters }) {
     const money = useMoney();
     const { t } = useTerminology();
+    const { t: translate } = useTranslation();
     const { can } = useCan();
     const canExport = can('exports.download');
 
@@ -81,9 +83,9 @@ export default function Index({ summary, students, months, filters }) {
 
     return (
         <MealsLayout
-            title="Meal Report"
+            title={translate('Meal Report')}
             hint="hints.reports"
-            description="Per-student balances, meal costs, and what the pool can cover. Adjust the range to close a month."
+            description={translate('Per-student balances, meal costs, and what the pool can cover. Adjust the range to close a month.')}
         >
             <Head title="Meal Report" />
 

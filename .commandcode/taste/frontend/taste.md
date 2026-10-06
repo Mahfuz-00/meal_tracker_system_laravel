@@ -10,6 +10,7 @@
 - Wants smooth, modern, context-appropriate loading states: spinners on submitting/processing buttons and animated page/modal transitions (overlay fade-in, panel rise). Confidence: 0.85
 - Expects localization to translate the whole UI instantly on language change while user-entered database content (names, notes, free-text records) stays strictly in its original language. Confidence: 0.8
 - Keeps the language selector inside User Settings rather than the global top bar. Confidence: 0.7
+- Prefers consolidating related interface preferences into one General/Theme settings manager instead of maintaining sparse standalone settings modules (e.g. folding language selection and hint toggles directly into the theme/general settings screen). Confidence: 0.6
 - Wants internationalization built as a single central language hub — one registry every subsystem reads, plus one command/flow to add a new language that scaffolds its files and registers it — so adding a language on top of existing ones is smooth, additive and requires no per-language or per-feature code changes. Confidence: 0.8
 - Prefers a persistently mounted SPA shell: switching modules must not re-render, blink or reload the global sidebar — only the content body swaps via client-side routing, and the sidebar's active selection updates immediately without re-fetching itself. Confidence: 0.75
 - Prefers structured, namespaced translation keys (e.g. `dashboard.metrics.total_users`) over raw English sentences used as keys. Confidence: 0.65

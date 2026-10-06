@@ -25,7 +25,7 @@ const isRouteActive = (match, routeName) => {
  * so changing a workspace accent repaints the sidebar with no code change.
  */
 const topLevelClasses = (active) =>
-    `group relative flex w-full items-center justify-between gap-3 px-3.5 py-2.5 rounded-xl font-semibold text-sm transition-colors duration-150 ${active
+    `group relative flex w-full items-center justify-between gap-3 px-3 py-2 rounded-xl font-semibold text-sm transition-colors duration-150 ${active
         ? 'bg-[var(--accent)] text-white shadow-sm'
         : 'text-slate-600 hover:bg-slate-100/80 hover:text-slate-900'
     }`;
@@ -145,10 +145,10 @@ export default function Sidebar({ user, onNavigate }) {
         : 'U';
 
     return (
-        <aside className="flex h-screen w-72 max-w-80 flex-shrink-0 h-screen sticky top-0 left-0 flex flex-col justify-between px-4 py-6 bg-white border-r border-slate-200/80 shadow-xs z-30 overflow-hidden">
+        <aside className="sticky top-0 left-0 z-30 flex h-screen w-72 max-w-80 flex-shrink-0 flex-col justify-between overflow-hidden border-r border-slate-200/80 bg-white px-3 py-4 shadow-xs">
             {/* ---- Sticky brand header ---- */}
-            <div className="sticky top-0 z-10 flex-shrink-0 border-b border-slate-100 bg-white px-4 pb-4 pt-6">
-                <div className="flex items-center gap-3.5 px-2">
+            <div className="sticky top-0 z-10 flex-shrink-0 border-b border-slate-100 bg-white px-2.5 pb-2.5 pt-3">
+                <div className="flex items-center gap-3 px-1.5">
                     {/* The SSA sees the PLATFORM logo (or a control-centre glyph);
                         everyone else sees their institution's own logo. */}
                     {showPlatformBrand && logoUrl ? (
@@ -177,17 +177,17 @@ export default function Sidebar({ user, onNavigate }) {
                         <p className="truncate text-xs font-medium text-slate-400">
                             {showPlatformBrand
                                 ? adminSubtitle
-                                : (institution?.subtitle || institution?.type_label || 'Shared meals, tracked')}
+                                : (institution?.subtitle || institution?.type_label || t('Shared meals, tracked'))}
                         </p>
                     </div>
                 </div>
             </div>
 
             {/* ---- Scrollable navigation ---- */}
-            <div className="min-h-0 flex-1 overflow-y-auto px-4 py-4">
-                <nav aria-label="Main navigation" className="space-y-5">
+            <div className="min-h-0 flex-1 overflow-y-auto px-1.5 py-3">
+                <nav aria-label="Main navigation" className="space-y-3.5">
                     {sections.map((section, sectionIndex) => (
-                        <div key={section.heading || sectionIndex} className="space-y-1.5">
+                        <div key={section.heading || sectionIndex} className="space-y-1">
                             {section.heading && (
                                 <p className="px-3.5 pb-1 text-[10px] font-bold uppercase tracking-wider text-slate-400">
                                     {t(section.heading)}
@@ -286,8 +286,8 @@ export default function Sidebar({ user, onNavigate }) {
             {/* ---- Compact pinned profile footer ----
                 Profile info on the left, a logout icon button to its side, so
                 the whole block stays one row tall instead of stacking. */}
-            <div className="flex-shrink-0 border-t border-slate-100 bg-white p-3">
-                <div className="flex items-center gap-2 rounded-xl bg-slate-50/80 p-2">
+            <div className="flex-shrink-0 border-t border-slate-100 bg-white p-2">
+                <div className="flex items-center gap-2 rounded-xl bg-slate-50/80 p-1.5">
                     <Link
                         href={route('profile.edit')}
                         onClick={onNavigate}

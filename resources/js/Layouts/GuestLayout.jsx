@@ -35,7 +35,7 @@ export default function GuestLayout({ heading, subheading, children }) {
                 {/* ---- Left intro panel (desktop only) ---- */}
                 <aside
                     data-testid="login-intro-panel"
-                    className="relative hidden overflow-hidden border-r border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-indigo-50/60 p-12 lg:flex lg:flex-col lg:justify-between"
+                    className="relative hidden overflow-hidden border-r border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-indigo-50/60 p-12 lg:flex lg:flex-col"
                 >
                     <Link href="/" className="relative flex items-center gap-3">
                         {logoUrl ? (
@@ -46,11 +46,11 @@ export default function GuestLayout({ heading, subheading, children }) {
                         <span className="text-lg font-extrabold tracking-tight text-slate-900">{name}</span>
                     </Link>
 
-                    <div className="wa-rise relative max-w-lg">
+                    <div className="wa-rise relative mt-14 max-w-lg lg:mt-20">
                         <h2 className="text-3xl font-extrabold leading-tight tracking-tight text-slate-900">
                             {t('auth.intro_title')}
                         </h2>
-                        <p className="mt-4 text-sm leading-relaxed text-slate-600">{t('auth.intro_body')}</p>
+                        <p className="mt-5 text-sm leading-relaxed text-slate-600">{t('auth.intro_body')}</p>
 
                         <ul className="mt-8 space-y-3">
                             {features.map((feature) => (
@@ -67,7 +67,7 @@ export default function GuestLayout({ heading, subheading, children }) {
                     </div>
 
                     {/* Lottie-style looping vector animation (plain SVG + CSS). */}
-                    <div className="relative mt-8">
+                    <div className="relative mt-auto pt-10">
                         <LoginHeroAnimation />
                         <p className="mt-4 max-w-md text-[11px] leading-relaxed text-slate-500">{tagline}</p>
                     </div>

@@ -35,9 +35,15 @@ class PersistentSidebarNavigationTest extends DuskTestCase
             $browser->waitFor('[data-testid=app-sidebar-desktop]', 20)
                 ->waitFor('[data-testid=app-topbar]', 20);
 
-            // The Top Bar carries profile actions + notifications + context.
+            // The Top Bar carries profile actions + notifications + DYNAMIC context.
             $browser->assertPresent('[data-testid=topbar-profile]')
-                ->assertPresent('[data-testid=topbar-context]');
+                ->assertPresent('[data-testid=topbar-context]')
+                ->assertPresent('[data-testid=topbar-breadcrumb]')
+                ->assertPresent('[data-testid=topbar-date]');
+
+            // The breadcrumb reflects the ACTIVE module (dynamic, not hardcoded).
+            $dashCrumb = $browser->script("return document.querySelector('[data-testid=topbar-breadcrumb]').textContent;");
+            $this->assertStringContainsString('Dashboard', $dashCrumb[0] ?? '', 'Breadcrumb does not show the active module.');
 
             // Stamp the live shell elements. React never renders these attributes,
             // so if the elements survive navigation the stamps survive with them.
@@ -56,6 +62,10 @@ class PersistentSidebarNavigationTest extends DuskTestCase
             $topbarStamp = $browser->script("return document.querySelector('[data-testid=app-topbar]').getAttribute('data-mounted-at');");
             $this->assertSame('SIDEBAR-1', $sidebarStamp[0] ?? null, 'The sidebar was remounted navigating into the Meals module.');
             $this->assertSame('TOPBAR-1', $topbarStamp[0] ?? null, 'The top bar was remounted navigating into the Meals module.');
+
+            // ...and the breadcrumb updates to the new module / sub-module.
+            $mealCrumb = $browser->script("return document.querySelector('[data-testid=topbar-breadcrumb]').textContent;");
+            $this->assertStringContainsString('Meal', $mealCrumb[0] ?? '', 'Breadcrumb did not update to the Meals module.');
 
             // Active selection updates in place (no remount needed).
             $browser->assertPresent('[data-testid=app-sidebar-desktop] a[aria-current="page"]');

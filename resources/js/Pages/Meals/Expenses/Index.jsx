@@ -4,6 +4,7 @@ import Modal from '@/Components/UI/Modal';
 import Field from '@/Components/UI/Field';
 import useCan from '@/Utils/can';
 import useMoney from '@/Utils/useMoney';
+import { useTranslation } from '@/i18n/LocaleProvider';
 import { useFeedback } from '@/Components/Feedback/FeedbackProvider';
 import { Head, Link, router, useForm, usePage } from '@inertiajs/react';
 
@@ -54,6 +55,7 @@ function Flash({ success, error }) {
 
 export default function Index({ expenses, categories, vendors, filteredTotal, byVendor, months, month, filters }) {
     const { can } = useCan();
+    const { t: translate } = useTranslation();
     const { flash } = usePage().props;
     const money = useMoney();
     const { confirm } = useFeedback();
@@ -163,9 +165,9 @@ export default function Index({ expenses, categories, vendors, filteredTotal, by
 
     return (
         <MealsLayout
-            title="Expenses"
+            title={translate('Expenses')}
             hint="hints.expenses"
-            description="Money spent on groceries and supplies. Each entry is also recorded as a cash-out transaction."
+            description={translate('Money spent on groceries and supplies. Each entry is also recorded as a cash-out transaction.')}
             actions={
                 canRecord && (
                     <button
