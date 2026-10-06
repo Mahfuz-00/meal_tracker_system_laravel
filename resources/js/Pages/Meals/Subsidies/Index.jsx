@@ -141,6 +141,7 @@ export default function Index({ subsidies, sources, applyModes, departments, stu
     return (
         <MealsLayout
             title="Institutional Subsidies"
+            hint="hints.subsidies"
             description="Funds injected by the university, company, or college administration - tracked separately from member deposits."
             actions={
                 <div className="flex flex-wrap items-center gap-2">

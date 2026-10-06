@@ -312,17 +312,6 @@ export const NAV_SECTIONS = [
                 icon: 'settings',
                 permission: null,
             },
-            {
-                // Language & preferences: per-account interface language and the
-                // global hint toggle. A personal preference (no permission gate),
-                // and deliberately the ONLY place a language can be changed -
-                // never the top bar.
-                label: 'Language',
-                route: 'settings.language.edit',
-                match: 'settings.language.*',
-                icon: 'settings',
-                permission: null,
-            },
         ],
     },
     {
@@ -469,14 +458,6 @@ export const NAV_SECTIONS = [
                 label: 'Theme Customizer',
                 route: 'settings.theme.edit',
                 match: 'settings.theme.*',
-                icon: 'settings',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                label: 'Language',
-                route: 'settings.language.edit',
-                match: 'settings.language.*',
                 icon: 'settings',
                 roles: ['Member'],
                 rolesOnly: true,

@@ -1,8 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
 import SettingsLayout from '@/Layouts/SettingsLayout';
-import { Head, useForm } from '@inertiajs/react';
+import HelpHint from '@/Components/Help/HelpHint';
+import { Head, router, useForm, usePage } from '@inertiajs/react';
 import { useTheme, ACCENT_SOFT, ACCENT_HEX, RADIUS_PX, DENSITY_SCALE } from '@/Components/ThemeProvider';
 import ThemedText from '@/Components/UI/ThemedText';
+import { useTranslation } from '@/i18n/LocaleProvider';
 
 /**
  * The dedicated Theme Customizer.
@@ -88,6 +90,11 @@ export default function ThemeCustomizer({ theme, accents = [], fonts = [], radiu
             <form onSubmit={submit} className="grid grid-cols-1 gap-8 lg:grid-cols-12 lg:items-start">
                 {/* ---- Controls ---- */}
                 <div className="space-y-6 lg:col-span-7">
+                    {/* Language + on-screen hints (merged in from the old
+                        standalone Language settings page, so all personal
+                        interface preferences live in ONE place). */}
+                    <LanguagePreferences />
+
                     {/* Light / Dark */}
                     <section className="rounded-2xl border-slate-200/80 bg-white p-6 shadow-xs sm:p-7">
                         <SectionHead
@@ -301,6 +308,89 @@ export default function ThemeCustomizer({ theme, accents = [], fonts = [], radiu
 /* ------------------------------------------------------------------ *
  * Small presentational helpers
  * ------------------------------------------------------------------ */
+
+/**
+ * Language & preferences.
+ *
+ * Merged into the Theme/General settings manager so language selection and the
+ * global hints toggle live alongside the rest of the personal preferences. Both
+ * apply IMMEDIATELY (they are per-account preferences, not part of the theme
+ * form), reading the shared `locale` / `hints` props and writing back through
+ * the locale endpoints.
+ */
+function LanguagePreferences() {
+    const { locale, hints } = usePage().props;
+    const { t } = useTranslation();
+
+    const current = locale?.current ?? 'en';
+    const supported = locale?.supported ?? [];
+    const hintsEnabled = hints?.enabled ?? true;
+
+    const choose = (code) => {
+        if (code === current) return;
+        router.put(route('settings.language.update'), { locale: code }, { preserveScroll: true });
+    };
+
+    const toggleHints = () => {
+        router.put(route('settings.language.hints'), { hints_enabled: !hintsEnabled }, { preserveScroll: true });
+    };
+
+    return (
+        <section className="rounded-2xl border-slate-200/80 bg-white p-6 shadow-xs sm:p-7" data-testid="language-preferences">
+            <SectionHead title={t('settings.language_heading')} subtitle={t('settings.language_subtitle')} />
+
+            <div className="mt-5 grid gap-3 sm:max-w-md sm:grid-cols-2">
+                {supported.map((option) => {
+                    const active = option.code === current;
+
+                    return (
+                        <button
+                            key={option.code}
+                            type="button"
+                            data-testid={`language-option-${option.code}`}
+                            aria-pressed={active}
+                            onClick={() => choose(option.code)}
+                            className={`flex items-center justify-between rounded-xl border p-4 text-left transition-all ${active
+                                    ? 'border-indigo-300 bg-indigo-50/40 ring-2 ring-indigo-500/10'
+                                    : 'border-slate-200/80 bg-white hover:border-slate-300 hover:bg-slate-50/50'
+                                }`}
+                        >
+                            <span>
+                                <span className="block text-sm font-bold text-slate-900">{option.label}</span>
+                                <span className="mt-0.5 block text-xs text-slate-500">{option.english}</span>
+                            </span>
+                            {active && (
+                                <svg className="h-4 w-4 flex-shrink-0 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M5 13l4 4L19 7" />
+                                </svg>
+                            )}
+                        </button>
+                    );
+                })}
+            </div>
+
+            <p className="mt-3 text-xs leading-relaxed text-slate-500">{t('settings.language_help')}</p>
+
+            {/* Global on-screen hints toggle. */}
+            <div className="mt-6 flex items-center justify-between gap-4 border-t border-slate-100 pt-5">
+                <div className="flex items-center">
+                    <span className="text-sm font-semibold text-slate-700">{t('settings.hints_toggle')}</span>
+                    <HelpHint hintKey="hints.language" />
+                </div>
+                <button
+                    type="button"
+                    role="switch"
+                    data-testid="hints-toggle"
+                    aria-checked={hintsEnabled}
+                    onClick={toggleHints}
+                    className={`relative inline-flex h-6 w-11 flex-shrink-0 items-center rounded-full transition-colors ${hintsEnabled ? 'bg-[var(--accent)]' : 'bg-slate-300'}`}
+                >
+                    <span className={`inline-block h-5 w-5 transform rounded-full bg-white shadow transition-transform ${hintsEnabled ? 'translate-x-5' : 'translate-x-0.5'}`} />
+                </button>
+            </div>
+        </section>
+    );
+}
 
 function SectionHead({ title, subtitle }) {
     return (

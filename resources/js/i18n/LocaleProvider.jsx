@@ -45,7 +45,6 @@ export function LocaleProvider({ locale, children }) {
 
     const current = payload?.current ?? 'en';
     const messages = payload?.messages ?? {};
-    const phrases = payload?.phrases ?? {};
     const supported = payload?.supported ?? [];
     const rtl = Boolean(payload?.rtl);
 
@@ -68,8 +67,6 @@ export function LocaleProvider({ locale, children }) {
 
             let value = messages[key];
 
-            if (value === undefined) value = phrases[key];
-
             if (value === undefined || value === null) {
                 return fallback ?? key;
             }
@@ -82,7 +79,7 @@ export function LocaleProvider({ locale, children }) {
 
             return value;
         },
-        [messages, phrases]
+        [messages]
     );
 
     const value = useMemo(

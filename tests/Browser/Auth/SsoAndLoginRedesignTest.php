@@ -30,14 +30,29 @@ class SsoAndLoginRedesignTest extends DuskTestCase
                 ->assertPresent('#email')
                 ->assertPresent('#password');
 
-            // The intro panel carries a subtle background animation.
+            // The intro panel carries the Lottie-style looping SVG animation.
             $animated = $browser->script(
-                "return !!document.querySelector('[data-testid=login-intro-panel] .wa-float, [data-testid=login-intro-panel] .wa-pulse, [data-testid=login-intro-panel] .ambient-orb-a');"
+                "return !!document.querySelector('[data-testid=login-intro-panel] .lh-hero svg .lh-float');"
             );
             $this->assertTrue(
                 (bool) ($animated[0] ?? false),
-                'The login intro panel has no animated element.'
+                'The login intro panel has no Lottie-style animated element.'
             );
+
+            // Branding is CONSISTENT: the intro panel, the form footer and the
+            // page <title> all show the same single-sourced platform name.
+            $panelText = $browser->script(
+                "return document.querySelector('[data-testid=login-intro-panel]').textContent;"
+            );
+            $this->assertStringContainsString('NomNomytics', (string) ($panelText[0] ?? ''), 'The intro panel brand is inconsistent.');
+
+            $title = $browser->script('return document.title;');
+            $this->assertStringContainsString('NomNomytics', (string) ($title[0] ?? ''), 'The page title does not use the platform brand.');
+
+            $cardText = $browser->script(
+                "return document.querySelector('[data-testid=login-form-card]').textContent;"
+            );
+            $this->assertStringContainsString('NomNomytics', (string) ($cardText[0] ?? ''), 'The login card brand is inconsistent.');
 
             // Graceful absence of SSO when no providers are configured.
             $browser->assertMissing('[data-testid=sso-providers]');

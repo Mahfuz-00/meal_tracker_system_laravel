@@ -1,6 +1,7 @@
 import React, { useContext } from 'react';
 import AuthenticatedLayout from '@/Layouts/AuthenticatedLayout';
 import ShellContext from '@/Layouts/shellContext';
+import HelpHint from '@/Components/Help/HelpHint';
 import { Link } from '@inertiajs/react';
 import useCan from '@/Utils/can';
 import useTerminology from '@/Utils/useTerminology';
@@ -24,7 +25,7 @@ const TABS = [
     { label: 'Reports', route: 'meals.reports.index', match: 'meals.reports.*', permission: 'meals.reports' },
 ];
 
-export default function MealsLayout({ title, description, actions, children }) {
+export default function MealsLayout({ title, description, actions, hint = null, children }) {
     const { can } = useCan();
     const { t: term } = useTerminology();
     const { t } = useTranslation();
@@ -65,7 +66,10 @@ export default function MealsLayout({ title, description, actions, children }) {
             {(title || actions) && (
                 <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                        <h3 className="text-lg font-bold text-slate-900">{title}</h3>
+                        <h3 className="flex items-center text-lg font-bold text-slate-900">
+                            {title}
+                            {hint && <HelpHint hintKey={hint} />}
+                        </h3>
                         {description && (
                             <p className="mt-0.5 text-sm text-slate-500">{description}</p>
                         )}

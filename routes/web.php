@@ -189,12 +189,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/settings/theme/reset', [ThemeController::class, 'reset'])->name('settings.theme.reset');
 
     /*
-     * Language & preferences - a per-account interface setting available to
-     * EVERY authenticated user, exactly like the theme. The language switcher
-     * lives ONLY here (never in the top bar), and the same screen owns the
-     * global help-hints toggle.
+     * Language & preferences - MERGED INTO the Theme/General settings manager,
+     * so there is no standalone Language page. Only the update endpoints live
+     * here; both are per-account preferences (like the theme), NOT permission
+     * gated, and the switcher appears ONLY inside Settings (never the top bar).
      */
-    Route::get('/settings/language', [LocaleController::class, 'edit'])->name('settings.language.edit');
     Route::put('/settings/language', [LocaleController::class, 'update'])->name('settings.language.update');
     Route::put('/settings/language/hints', [LocaleController::class, 'updateHints'])->name('settings.language.hints');
 

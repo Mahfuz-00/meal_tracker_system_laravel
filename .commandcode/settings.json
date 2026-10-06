@@ -1,7 +1,13 @@
 {
   "permissions": {
     "allow": [
-      "Shell(php -v 2>&1 | Select-Object -First 2; echo \"---NODE---\"; node -v 2>&1; echo \"---COMPOSER---\"; composer --version 2>&1 | Select-Object -First 1)"
+      "Shell(php -v 2>&1 | Select-Object -First 2; echo \"---NODE---\"; node -v 2>&1; echo \"---COMPOSER---\"; composer --version 2>&1 | Select-Object -First 1)",
+      "powershell",
+      "Shell(set:*)",
+      "Shell(php artisan serve --host=127.0.0.1 --port=8899)",
+      "Shell(php artisan config:clear)",
+      "Shell(php artisan dusk --filter=PersistentSidebarNavigation|SsoAndLoginRedesign|MultiLanguagePreferences|UserOnboardingAndHints)",
+      "Shell(del /Q \"tests\\Browser\\screenshots\\failure-*.png\" 2>NUL & echo cleaned)"
     ],
     "deny": [],
     "defaultMode": "default"

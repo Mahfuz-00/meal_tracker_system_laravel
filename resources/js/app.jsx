@@ -11,7 +11,7 @@ import { HintsProvider } from '@/Components/Help/HintsProvider';
 import { applyThemeTokens, readLocalTheme } from '@/Components/ThemeProvider';
 import { LocaleProvider } from '@/i18n/LocaleProvider';
 
-const appName = import.meta.env.VITE_APP_NAME || 'Laravel';
+let appName = import.meta.env.VITE_APP_NAME || 'NomNomytics';
 
 /**
  * Decide which theme to paint with, in precedence order, and apply it.
@@ -77,6 +77,13 @@ createInertiaApp({
     setup({ el, App, props }) {
         // 1. Initial paint: apply the theme before React mounts (no flash).
         resolveAndApply(props?.initialPage?.props);
+
+        /*
+         * Single-source the brand. The page <title> must show the SAME software
+         * name as the login panel and sidebar - so read it from the shared
+         * `platform` prop (config/platform.php) rather than a hardcoded default.
+         */
+        appName = props?.initialPage?.props?.platform?.name || appName;
 
         // 2. Re-apply on every successful visit, so a saved theme - or an SSA
         //    institution switch - repaints the whole app at once, no reload.

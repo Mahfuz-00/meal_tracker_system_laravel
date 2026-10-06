@@ -5,16 +5,23 @@ namespace App\Support;
 use Illuminate\Support\Facades\File;
 
 /**
- * CENTRAL LOCALE RESOLUTION.
+ * CENTRAL LANGUAGE HUB.
  *
  * One class owns every question about languages:
  *   - which locales exist and their metadata,
  *   - whether a code is valid,
- *   - the flattened message catalogue the React layer renders from.
+ *   - the flat message catalogue the React layer renders from.
  *
- * The frontend never reads `lang/` directly; HandleInertiaRequests ships the
- * catalogue for the ACTIVE locale as a shared prop, and LocaleProvider renders
- * from it. That keeps a single path for translations on both sides of the wire.
+ * TRANSLATIONS LIVE IN JSON. Each locale is a single flat key/value file -
+ * `lang/en.json`, `lang/bn.json` - and BOTH sides of the wire read it:
+ *   - Laravel's own `__('settings.language_saved')` resolves from the JSON file
+ *     for the active locale (Laravel checks JSON translations first),
+ *   - the React layer renders from the same keys, shipped via the shared
+ *     `locale.messages` Inertia prop.
+ *
+ * Keys may be dotted namespaces (`nav.dashboard`) OR the English source string
+ * itself (`"Dashboard": "ড্যাশবোর্ড"`) so page-body copy can be translated
+ * without inventing a key for every sentence. Adding a language is one file.
  */
 class LocaleManager
 {
@@ -73,9 +80,8 @@ class LocaleManager
     }
 
     /**
-     * The flattened message catalogue for a locale: every key from every
-     * `lang/<code>/*.php` file, dot-joined (e.g. `nav.dashboard`), with the
-     * fallback locale merged underneath so missing keys degrade to English.
+     * The flat message catalogue for a locale, with the fallback locale merged
+     * underneath so a key missing from the active language degrades to English.
      *
      * @return array<string,string>
      */
@@ -84,92 +90,28 @@ class LocaleManager
         $code = static::normalise($code);
         $fallback = static::fallback();
 
-        $base = static::loadGroup($fallback);
+        $base = static::load($fallback);
 
         return $code === $fallback
             ? $base
-            : array_merge($base, static::loadGroup($code));
+            : array_merge($base, static::load($code));
     }
 
     /**
-     * The phrase book for a locale: an English source string => translation map,
-     * used by `t('Some English label')` for page-body literals that are not
-     * worth a dotted key. English has no phrase book (identity).
+     * Load a locale's flat JSON catalogue.
      *
      * @return array<string,string>
      */
-    public static function phrases(?string $code = null): array
+    protected static function load(string $locale): array
     {
-        $code = static::normalise($code);
-        $file = lang_path("{$code}/phrases.php");
+        $file = lang_path("{$locale}.json");
 
         if (! File::exists($file)) {
             return [];
         }
 
-        $phrases = require $file;
+        $decoded = json_decode(File::get($file), true);
 
-        return is_array($phrases) ? $phrases : [];
-    }
-
-    /**
-     * Load and flatten every PHP file in `lang/<locale>/`, prefixing keys with
-     * the file name so `nav.php` becomes `nav.<key>`. `phrases.php` is excluded
-     * (it is a flat English=>translation map, served by phrases()).
-     *
-     * @return array<string,string>
-     */
-    protected static function loadGroup(string $locale): array
-    {
-        $dir = lang_path($locale);
-
-        if (! File::isDirectory($dir)) {
-            return [];
-        }
-
-        $messages = [];
-
-        foreach (File::files($dir) as $file) {
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
-
-            $group = $file->getFilenameWithoutExtension();
-
-            if ($group === 'phrases') {
-                continue;
-            }
-
-            $lines = require $file->getPathname();
-
-            if (is_array($lines)) {
-                $messages = array_merge($messages, static::flatten($lines, $group));
-            }
-        }
-
-        return $messages;
-    }
-
-    /**
-     * Flatten a nested translation array into dot notation.
-     *
-     * @param  array<string,mixed>  $lines
-     * @return array<string,string>
-     */
-    protected static function flatten(array $lines, string $prefix): array
-    {
-        $out = [];
-
-        foreach ($lines as $key => $value) {
-            $full = $prefix === '' ? (string) $key : "{$prefix}.{$key}";
-
-            if (is_array($value)) {
-                $out = array_merge($out, static::flatten($value, $full));
-            } else {
-                $out[$full] = $value;
-            }
-        }
-
-        return $out;
+        return is_array($decoded) ? $decoded : [];
     }
 }

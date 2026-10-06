@@ -174,6 +174,7 @@ export default function Index({ departments, filters }) {
     return (
         <MealsLayout
             title={t('departments', 'Groups')}
+            hint="hints.departments"
             description={`Group ${t('members', 'members').toLowerCase()} so meal costs can be attributed accurately.`}
             actions={
                 canManage && (

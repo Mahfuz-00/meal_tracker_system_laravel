@@ -94,6 +94,7 @@ export default function Index({ vendors, categories = [], recurrences = [], filt
     return (
         <MealsLayout
             title="Vendors & Suppliers"
+            hint="hints.vendors"
             description="Who the institution buys from - including the institution itself as the primary hub - and how much has been spent with each."
             actions={
                 <div className="flex flex-wrap items-center gap-2">

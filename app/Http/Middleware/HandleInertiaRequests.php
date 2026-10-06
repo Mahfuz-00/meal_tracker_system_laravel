@@ -168,8 +168,6 @@ class HandleInertiaRequests extends Middleware
                 'rtl' => (bool) (\App\Support\LocaleManager::meta(app()->getLocale())['rtl'] ?? false),
                 'supported' => \App\Support\LocaleManager::catalogue(),
                 'messages' => \App\Support\LocaleManager::messages(app()->getLocale()),
-                // The phrase book for PAGE BODIES (English source => translation).
-                'phrases' => \App\Support\LocaleManager::phrases(app()->getLocale()),
             ],
 
             /*

@@ -1,5 +1,6 @@
 import ApplicationLogo from '@/Components/ApplicationLogo';
 import AmbientBackground from '@/Components/AmbientBackground';
+import LoginHeroAnimation from '@/Components/LoginHeroAnimation';
 import usePlatformBranding from '@/Utils/usePlatformBranding';
 import { useTranslation } from '@/i18n/LocaleProvider';
 import { Link } from '@inertiajs/react';
@@ -8,13 +9,13 @@ import { Link } from '@inertiajs/react';
  * Guest / auth shell.
  *
  * A two-column split: a light, modern INTRO panel on the left (brand, promise,
- * feature bullets and a gently animated visual) and the form card on the right.
- * The left panel is hidden below `lg`, so small screens keep the focused
- * single-card layout.
+ * feature bullets and a smooth Lottie-style vector animation) and the form card
+ * on the right. The left panel is hidden below `lg`, so small screens keep the
+ * focused single-card layout.
  *
- * The subtle background motion comes from the shared AmbientBackground (drifting
- * gradient orbs, `prefers-reduced-motion` guarded) plus the existing `wa-*`
- * entrance/float utilities - no new dependency.
+ * BRANDING is single-sourced from config/platform.php via usePlatformBranding(),
+ * so the brand shown here is the SAME as the page <title>, the sidebar header
+ * and the platform chrome - never a mismatched "Laravel"/tenant name.
  */
 export default function GuestLayout({ heading, subheading, children }) {
     const { name, tagline, logoUrl } = usePlatformBranding();
@@ -36,10 +37,6 @@ export default function GuestLayout({ heading, subheading, children }) {
                     data-testid="login-intro-panel"
                     className="relative hidden overflow-hidden border-r border-slate-200/70 bg-gradient-to-br from-white via-slate-50 to-indigo-50/60 p-12 lg:flex lg:flex-col lg:justify-between"
                 >
-                    {/* Drifting glow orbs for depth (animated, GPU-only). */}
-                    <div aria-hidden="true" className="wa-pulse pointer-events-none absolute -right-24 -top-24 h-96 w-96 rounded-full bg-indigo-300/30 blur-3xl" />
-                    <div aria-hidden="true" className="wa-pulse pointer-events-none absolute -bottom-28 -left-16 h-80 w-80 rounded-full bg-sky-300/25 blur-3xl" style={{ animationDelay: '1.4s' }} />
-
                     <Link href="/" className="relative flex items-center gap-3">
                         {logoUrl ? (
                             <img src={logoUrl} alt={name} className="h-11 w-11 rounded-xl object-contain shadow-sm ring-1 ring-slate-200/60" />
@@ -69,19 +66,10 @@ export default function GuestLayout({ heading, subheading, children }) {
                         </ul>
                     </div>
 
-                    {/* A floating, animated product chip so the panel feels alive. */}
-                    <div className="wa-float relative">
-                        <div className="max-w-xs rounded-2xl border border-slate-200/80 bg-white/80 p-4 shadow-xl backdrop-blur">
-                            <div className="flex items-center justify-between">
-                                <span className="text-xs font-bold text-slate-900">{t('dashboard.pool_balance')}</span>
-                                <span className="rounded-full bg-[var(--accent-soft)] px-2.5 py-0.5 text-[10px] font-bold text-[var(--accent)]">
-                                    {t('Live')}
-                                </span>
-                            </div>
-                            <div className="mt-3 h-2 w-2/3 rounded-full bg-slate-100" />
-                            <div className="mt-2 h-2 w-1/2 rounded-full bg-slate-100" />
-                            <p className="mt-3 text-[11px] leading-relaxed text-slate-500">{tagline}</p>
-                        </div>
+                    {/* Lottie-style looping vector animation (plain SVG + CSS). */}
+                    <div className="relative mt-8">
+                        <LoginHeroAnimation />
+                        <p className="mt-4 max-w-md text-[11px] leading-relaxed text-slate-500">{tagline}</p>
                     </div>
                 </aside>
 
@@ -93,13 +81,14 @@ export default function GuestLayout({ heading, subheading, children }) {
                             className="wa-rise relative rounded-3xl border border-slate-200/80 bg-white p-8 shadow-xl shadow-slate-900/5 ring-1 ring-slate-900/5"
                         >
                             {/* Brand logo header (mobile only - the desktop panel shows it). */}
-                            <div className="mb-6 flex justify-center lg:hidden">
+                            <div className="mb-6 flex flex-col items-center gap-2 lg:hidden">
                                 <Link href="/" className="group flex items-center gap-3">
                                     {logoUrl ? (
                                         <img src={logoUrl} alt={name} className="h-10 w-10 rounded-xl object-contain shadow-sm ring-1 ring-slate-200/60 transition-transform group-hover:scale-105" />
                                     ) : (
                                         <ApplicationLogo className="h-10 w-10 rounded-xl object-contain shadow-sm ring-1 ring-slate-200/60 transition-transform group-hover:scale-105" />
                                     )}
+                                    <span className="text-base font-extrabold tracking-tight text-slate-900">{name}</span>
                                 </Link>
                             </div>
 

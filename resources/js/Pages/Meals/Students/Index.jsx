@@ -238,6 +238,7 @@ export default function Index({ students, departments, managers, costPerMeal, ra
     return (
         <MealsLayout
             title={t('members', 'Members')}
+            hint="hints.members"
             description={`Everyone sharing the ${t('institution', 'mess').toLowerCase()}. Deposit and meal totals update automatically.`}
             actions={
                 <div className="flex flex-wrap items-center gap-2">

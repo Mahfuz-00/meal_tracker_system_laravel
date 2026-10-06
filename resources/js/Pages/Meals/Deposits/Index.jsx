@@ -170,6 +170,7 @@ export default function Index({ deposits, students, kinds, filteredTotal, person
     return (
         <MealsLayout
             title="Deposits"
+            hint="hints.deposits"
             description="Money each student pays into the common pool. Every deposit is also recorded as a cash-in transaction."
             actions={
                 <div className="flex flex-wrap items-center gap-2">

@@ -9,73 +9,75 @@ use Tests\DuskTestCase;
 /**
  * THE PERSISTENT SHELL.
  *
- * The global sidebar must be mounted ONCE in the app shell, so moving between
- * modules swaps only the main content body - the sidebar itself never remounts,
- * blinks, or loses its open/closed state.
+ * The global sidebar AND the top bar must be mounted ONCE in the app shell, so
+ * moving between modules swaps only the main content body - neither the sidebar
+ * nor the top bar remounts, blinks, or loses state.
  *
- * Proven by stamping the sidebar with an attribute React does not manage and
- * confirming the SAME element (same stamp) survives a client-side navigation
- * into another module and back.
+ * Proven by stamping each with an attribute React does not manage and confirming
+ * the SAME elements (same stamps) survive a client-side navigation into another
+ * module and back.
  */
 class PersistentSidebarNavigationTest extends DuskTestCase
 {
     use DuskSupport;
 
-    public function test_sidebar_is_not_remounted_when_switching_modules(): void
+    public function test_sidebar_and_topbar_persist_across_modules(): void
     {
         $this->seedRbac();
         $institution = $this->makeInstitution();
         $admin = $this->makeInstitutionAdmin($institution, ['email' => 'layout-admin@example.test']);
 
-        $this->step('Layout', 'Sidebar', 'stamp sidebar, navigate dashboard ⇄ meals', __LINE__);
+        $this->step('Layout', 'Shell', 'stamp sidebar + top bar, navigate dashboard ⇄ meals', __LINE__);
 
         $this->browse(function (Browser $browser) use ($admin) {
             $this->loginViaForm($browser, $admin);
-            $browser->waitFor('[data-testid=app-sidebar-desktop]', 20);
 
-            // Stamp the live sidebar element. React never renders this attribute,
-            // so if the element survives navigation the stamp survives with it.
+            $browser->waitFor('[data-testid=app-sidebar-desktop]', 20)
+                ->waitFor('[data-testid=app-topbar]', 20);
+
+            // The Top Bar carries profile actions + notifications + context.
+            $browser->assertPresent('[data-testid=topbar-profile]')
+                ->assertPresent('[data-testid=topbar-context]');
+
+            // Stamp the live shell elements. React never renders these attributes,
+            // so if the elements survive navigation the stamps survive with them.
             $browser->script(
-                "document.querySelector('[data-testid=app-sidebar-desktop]').setAttribute('data-mounted-at','SENTINEL-1');"
+                "document.querySelector('[data-testid=app-sidebar-desktop]').setAttribute('data-mounted-at','SIDEBAR-1');"
+                . "document.querySelector('[data-testid=app-topbar]').setAttribute('data-mounted-at','TOPBAR-1');"
             );
 
-            // Client-side navigation into the Meals module (an Inertia visit -
-            // the sidebar link, NOT a full page load).
+            // Client-side navigation into the Meals module (an Inertia visit).
             $browser->click('[data-testid=app-sidebar-desktop] a[href$="/meals/entries"]')
                 ->waitForLocation('/meals/entries', 20)
-                ->waitFor('[data-testid=app-sidebar-desktop]', 20);
+                ->waitFor('[data-testid=app-sidebar-desktop]', 20)
+                ->waitFor('[data-testid=app-topbar]', 20);
 
-            $stamp = $browser->script(
-                "return document.querySelector('[data-testid=app-sidebar-desktop]').getAttribute('data-mounted-at');"
-            );
-            $this->assertSame(
-                'SENTINEL-1',
-                $stamp[0] ?? null,
-                'The sidebar was remounted when navigating from Dashboard into the Meals module.'
-            );
+            $sidebarStamp = $browser->script("return document.querySelector('[data-testid=app-sidebar-desktop]').getAttribute('data-mounted-at');");
+            $topbarStamp = $browser->script("return document.querySelector('[data-testid=app-topbar]').getAttribute('data-mounted-at');");
+            $this->assertSame('SIDEBAR-1', $sidebarStamp[0] ?? null, 'The sidebar was remounted navigating into the Meals module.');
+            $this->assertSame('TOPBAR-1', $topbarStamp[0] ?? null, 'The top bar was remounted navigating into the Meals module.');
 
-            // Its active selection updates in place (no remount needed).
+            // Active selection updates in place (no remount needed).
             $browser->assertPresent('[data-testid=app-sidebar-desktop] a[aria-current="page"]');
 
-            // Exactly one sidebar shell exists in the DOM.
-            $count = $browser->script(
-                "return document.querySelectorAll('[data-testid=app-sidebar-desktop]').length;"
-            );
-            $this->assertSame(1, (int) ($count[0] ?? 0), 'Expected exactly one desktop sidebar.');
+            // Exactly one of each shell element exists.
+            $sidebarCount = $browser->script("return document.querySelectorAll('[data-testid=app-sidebar-desktop]').length;");
+            $topbarCount = $browser->script("return document.querySelectorAll('[data-testid=app-topbar]').length;");
+            $this->assertSame(1, (int) ($sidebarCount[0] ?? 0), 'Expected exactly one desktop sidebar.');
+            $this->assertSame(1, (int) ($topbarCount[0] ?? 0), 'Expected exactly one top bar.');
 
-            // And back to Dashboard - still the same element.
+            // And back to Dashboard - still the same elements.
             $browser->click('[data-testid=app-sidebar-desktop] a[href$="/dashboard"]')
                 ->waitForLocation('/dashboard', 20)
-                ->waitFor('[data-testid=app-sidebar-desktop]', 20);
+                ->waitFor('[data-testid=app-topbar]', 20);
 
-            $stamp2 = $browser->script(
-                "return document.querySelector('[data-testid=app-sidebar-desktop]').getAttribute('data-mounted-at');"
-            );
-            $this->assertSame(
-                'SENTINEL-1',
-                $stamp2[0] ?? null,
-                'The sidebar was remounted on the return navigation.'
-            );
+            $sidebarStamp2 = $browser->script("return document.querySelector('[data-testid=app-sidebar-desktop]').getAttribute('data-mounted-at');");
+            $topbarStamp2 = $browser->script("return document.querySelector('[data-testid=app-topbar]').getAttribute('data-mounted-at');");
+            $this->assertSame('SIDEBAR-1', $sidebarStamp2[0] ?? null, 'The sidebar was remounted on the return navigation.');
+            $this->assertSame('TOPBAR-1', $topbarStamp2[0] ?? null, 'The top bar was remounted on the return navigation.');
+
+            // The top bar shows the current page context (ported page header).
+            $browser->assertSee('Meal & Expense Overview');
         });
     }
 }

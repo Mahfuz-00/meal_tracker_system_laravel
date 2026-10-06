@@ -164,6 +164,7 @@ export default function Index({ expenses, categories, vendors, filteredTotal, by
     return (
         <MealsLayout
             title="Expenses"
+            hint="hints.expenses"
             description="Money spent on groceries and supplies. Each entry is also recorded as a cash-out transaction."
             actions={
                 canRecord && (

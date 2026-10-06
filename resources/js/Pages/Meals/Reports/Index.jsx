@@ -82,6 +82,7 @@ export default function Index({ summary, students, months, filters }) {
     return (
         <MealsLayout
             title="Meal Report"
+            hint="hints.reports"
             description="Per-student balances, meal costs, and what the pool can cover. Adjust the range to close a month."
         >
             <Head title="Meal Report" />

@@ -51,7 +51,7 @@ class UserOnboardingAndHintsTest extends DuskTestCase
             $this->step('InstitutionAdmin', 'Hints', 'toggle off then on', __LINE__);
 
             // Toggle hints OFF in Settings → every badge vanishes (no reload).
-            $browser->visit('/settings/language')
+            $browser->visit('/settings/theme')
                 ->waitFor('[data-testid=hints-toggle]', 20)
                 ->click('[data-testid=hints-toggle]')
                 ->waitUntilMissing('[data-testid=help-hint]', 20)
