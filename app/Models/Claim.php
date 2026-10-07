@@ -31,6 +31,8 @@ class Claim extends Model
         'breakfast',
         'lunch',
         'dinner',
+        'meal_direction',
+        'credit_to_balance',
         'title',
         'description',
         'claim_date',
@@ -51,6 +53,7 @@ class Claim extends Model
         'breakfast' => 'integer',
         'lunch' => 'integer',
         'dinner' => 'integer',
+        'credit_to_balance' => 'boolean',
     ];
 
     /** Claim kinds, keyed by value with a friendly label + UI tone. */
@@ -62,8 +65,17 @@ class Claim extends Model
     /** What a deposit/meal dispute can be about. */
     public const SUBJECTS = [
         'deposit' => 'Missing deposit',
-        'meal' => 'Missing meal entry',
+        'meal' => 'Wrongful meal count',
         'other' => 'Other correction',
+    ];
+
+    /**
+     * For a MEAL dispute: were meals MISSED but not counted (add them back), or
+     * counted WRONGLY while the member was off/absent (subtract them back off)?
+     */
+    public const MEAL_DIRECTIONS = [
+        'add' => 'Meals were missed (add back)',
+        'remove' => 'Meals were counted wrongly (remove)',
     ];
 
     /** Lifecycle. */
@@ -124,6 +136,20 @@ class Claim extends Model
         return $query->where('kind', $kind);
     }
 
+    /** MEAL-count disputes only (missing / extra meals). */
+    public function scopeMealDisputes($query)
+    {
+        return $query->where('kind', 'dispute')->where('subject', 'meal');
+    }
+
+    /** FINANCIAL claims: out-of-pocket expenses and missing-deposit disputes. */
+    public function scopeFinancial($query)
+    {
+        return $query->whereNot(function ($q) {
+            $q->where('kind', 'dispute')->where('subject', 'meal');
+        });
+    }
+
     /* ------------------------------------------------------------------ *
      * Helpers
      * ------------------------------------------------------------------ */
@@ -156,7 +182,9 @@ class Claim extends Model
                 + (int) ($this->lunch ?? 0)
                 + (int) ($this->dinner ?? 0);
 
-            return $meals . ' meal' . ($meals === 1 ? '' : 's')
+            $verb = ($this->meal_direction === 'remove') ? 'counted wrongly' : 'missed';
+
+            return $meals . ' meal' . ($meals === 1 ? '' : 's') . ' ' . $verb
                 . ($this->entry_date ? ' on ' . $this->entry_date->format('j M Y') : '');
         }
 

@@ -10,6 +10,7 @@ use App\Models\Transaction;
 use App\Support\AuditLogger;
 use App\Support\Notifier;
 use Illuminate\Http\Request;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Inertia\Inertia;
@@ -41,17 +42,32 @@ class ClaimController extends Controller
         $claims = $student
             ? Claim::query()
                 ->where('student_id', $student->id)
+                // MEAL claims only - financial claims live in the Finance module.
+                ->mealDisputes()
                 ->orderByDesc('created_at')
                 ->paginate(15)
                 ->withQueryString()
                 ->through(fn (Claim $c) => $this->present($c))
             : null;
 
-        return Inertia::render('Claims/Index', [
+        return Inertia::render('Meals/MealClaims', [
             'hasMemberRecord' => (bool) $student,
             'claims' => $claims,
             'kinds' => collect(Claim::KINDS)->map(fn ($m, $k) => ['value' => $k, 'label' => $m['label']])->values(),
             'subjects' => collect(Claim::SUBJECTS)->map(fn ($label, $k) => ['value' => $k, 'label' => $label])->values(),
+            'mealDirections' => collect(Claim::MEAL_DIRECTIONS)->map(fn ($label, $k) => ['value' => $k, 'label' => $label])->values(),
+            // Dates (Y-m-d) this member actually has a recorded meal entry for.
+            // The UI disables a meal claim on any other date.
+            'mealEntryDates' => $student
+                ? MealEntry::query()
+                    ->where('student_id', $student->id)
+                    ->orderByDesc('date')
+                    ->limit(180)
+                    ->pluck('date')
+                    ->map(fn ($d) => Carbon::parse($d)->toDateString())
+                    ->unique()
+                    ->values()
+                : [],
         ]);
     }
 
@@ -78,6 +94,10 @@ class ClaimController extends Controller
             'breakfast' => ['nullable', 'integer', 'min:0', 'max:10'],
             'lunch' => ['nullable', 'integer', 'min:0', 'max:10'],
             'dinner' => ['nullable', 'integer', 'min:0', 'max:10'],
+            // add = missed meals to add back; remove = meals wrongly counted.
+            'meal_direction' => ['nullable', Rule::in(array_keys(Claim::MEAL_DIRECTIONS))],
+            // Money claims: credit the amount to the member's balance on approval?
+            'credit_to_balance' => ['nullable', 'boolean'],
         ]);
 
         // Guard rails per kind so a half-complete claim never reaches a manager.
@@ -88,10 +108,22 @@ class ClaimController extends Controller
         if ($data['kind'] === 'dispute' && ($data['subject'] ?? null) === 'meal') {
             $meals = (int) ($data['breakfast'] ?? 0) + (int) ($data['lunch'] ?? 0) + (int) ($data['dinner'] ?? 0);
             if ($meals <= 0) {
-                return back()->with('error', 'Select at least one missed meal.');
+                return back()->with('error', 'Select at least one meal.');
             }
             if (blank($data['entry_date'] ?? null)) {
-                return back()->with('error', 'Please provide the date the meal was missed.');
+                return back()->with('error', 'Please provide the date the meal was recorded.');
+            }
+
+            // CONDITIONAL RULE: a meal-count claim can only be raised against a
+            // date that ACTUALLY has a recorded meal entry - there is nothing to
+            // dispute otherwise (missing, or extra/over-counted).
+            $recorded = MealEntry::query()
+                ->where('student_id', $student->id)
+                ->whereDate('date', $data['entry_date'])
+                ->exists();
+
+            if (! $recorded) {
+                return back()->with('error', 'No meal was recorded for that date, so it cannot be disputed.');
             }
         }
 
@@ -105,6 +137,8 @@ class ClaimController extends Controller
             'breakfast' => $data['breakfast'] ?? null,
             'lunch' => $data['lunch'] ?? null,
             'dinner' => $data['dinner'] ?? null,
+            'meal_direction' => ($data['subject'] ?? null) === 'meal' ? ($data['meal_direction'] ?? 'add') : null,
+            'credit_to_balance' => array_key_exists('credit_to_balance', $data) ? (bool) $data['credit_to_balance'] : true,
             'title' => $data['title'],
             'description' => $data['description'] ?? null,
             'claim_date' => $data['claim_date'] ?? now()->toDateString(),
@@ -146,6 +180,7 @@ class ClaimController extends Controller
 
         $base = fn () => Claim::query()
             ->forInstitution($institution?->id)
+            ->mealDisputes()
             ->when($scopedIds !== null, fn ($q) => $q->whereIn('student_id', $scopedIds));
 
         $claims = $base()
@@ -212,19 +247,27 @@ class ClaimController extends Controller
                 ]);
                 $transactionId = $tx->id;
 
-                // Credit the member: the institution reimburses what they spent.
-                $deposit = Deposit::create([
-                    'student_id' => $student->id,
-                    'amount' => $amount,
-                    'kind' => 'credit',
-                    'payment_method' => 'Reimbursement',
-                    'recorded_by' => $request->user()->id,
-                    'transaction_id' => $tx->id,
-                    'notes' => 'Reimbursement for approved claim #' . $claim->id . ' - ' . $claim->title,
-                ]);
-                $depositId = $deposit->id;
+                // Credit the member's money-in balance UNLESS the member asked
+                // for the amount to be handled another way (credit_to_balance
+                // = false). The expense is still recorded either way.
+                if ($claim->credit_to_balance !== false) {
+                    $deposit = Deposit::create([
+                        'student_id' => $student->id,
+                        'amount' => $amount,
+                        'kind' => 'credit',
+                        'payment_method' => 'Reimbursement',
+                        'recorded_by' => $request->user()->id,
+                        'transaction_id' => $tx->id,
+                        'notes' => 'Reimbursement for approved claim #' . $claim->id . ' - ' . $claim->title,
+                    ]);
+                    $depositId = $deposit->id;
+                }
             } elseif ($claim->subject === 'meal') {
-                // Missing meal entry: add the missed meals to that day's record.
+                // Meal-COUNT dispute. `add` puts missed meals back; `remove`
+                // subtracts meals that were counted while the member was off,
+                // so an over-count is corrected (never below zero).
+                $sign = $claim->meal_direction === 'remove' ? -1 : 1;
+
                 // Looks up by DATE (the column stores a datetime), matching the
                 // pattern used by MealEntryController to avoid a unique clash.
                 $entry = MealEntry::query()
@@ -233,9 +276,9 @@ class ClaimController extends Controller
                     ->first();
 
                 $attributes = [
-                    'breakfast' => (int) ($entry?->breakfast ?? 0) + (int) ($claim->breakfast ?? 0),
-                    'lunch' => (int) ($entry?->lunch ?? 0) + (int) ($claim->lunch ?? 0),
-                    'dinner' => (int) ($entry?->dinner ?? 0) + (int) ($claim->dinner ?? 0),
+                    'breakfast' => max(0, (int) ($entry?->breakfast ?? 0) + $sign * (int) ($claim->breakfast ?? 0)),
+                    'lunch' => max(0, (int) ($entry?->lunch ?? 0) + $sign * (int) ($claim->lunch ?? 0)),
+                    'dinner' => max(0, (int) ($entry?->dinner ?? 0) + $sign * (int) ($claim->dinner ?? 0)),
                     'recorded_by' => $request->user()->id,
                 ];
 
@@ -334,6 +377,68 @@ class ClaimController extends Controller
     }
 
     /* ------------------------------------------------------------------ *
+     * FINANCE module - separate review/inbox for FINANCIAL claims
+     * ------------------------------------------------------------------ */
+
+    /** The member's financial claims (out-of-pocket purchases + missing deposits). */
+    public function expenses(Request $request)
+    {
+        $student = $request->user()->studentRecord();
+
+        $claims = $student
+            ? Claim::query()
+                ->where('student_id', $student->id)
+                ->financial()
+                ->orderByDesc('created_at')
+                ->paginate(15)
+                ->withQueryString()
+                ->through(fn (Claim $c) => $this->present($c))
+            : null;
+
+        return Inertia::render('Finance/ExpenseClaims', [
+            'hasMemberRecord' => (bool) $student,
+            'claims' => $claims,
+            'kinds' => collect(Claim::KINDS)->map(fn ($m, $k) => ['value' => $k, 'label' => $m['label']])->values(),
+            'subjects' => collect(Claim::SUBJECTS)->map(fn ($label, $k) => ['value' => $k, 'label' => $label])->values(),
+            'paymentMethods' => ['Cash', 'bKash', 'Nagad', 'Bank Transfer', 'Card'],
+        ]);
+    }
+
+    /** The manager's financial claim review queue (never meal disputes). */
+    public function expenseReview(Request $request)
+    {
+        $institution = Institution::current();
+        $status = (string) $request->query('status', 'pending');
+
+        // null = unrestricted within the institution; array = only these students.
+        $scopedIds = $request->user()->scopedStudentIds();
+
+        $base = fn () => Claim::query()
+            ->forInstitution($institution?->id)
+            ->financial()
+            ->when($scopedIds !== null, fn ($q) => $q->whereIn('student_id', $scopedIds));
+
+        $claims = $base()
+            ->with(['student:id,name,roll', 'reviewer:id,name'])
+            ->when($status !== '' && $status !== 'all', fn ($q) => $q->where('status', $status))
+            ->orderByRaw("CASE WHEN status = 'pending' THEN 0 ELSE 1 END")
+            ->orderByDesc('created_at')
+            ->paginate(20)
+            ->withQueryString()
+            ->through(fn (Claim $c) => $this->present($c, true));
+
+        return Inertia::render('Finance/ExpenseClaimReview', [
+            'claims' => $claims,
+            'stats' => [
+                'pending' => $base()->pending()->count(),
+                'approved' => $base()->where('status', 'approved')->count(),
+                'rejected' => $base()->where('status', 'rejected')->count(),
+            ],
+            'filters' => ['status' => $status],
+        ]);
+    }
+
+    /* ------------------------------------------------------------------ *
      * Helpers
      * ------------------------------------------------------------------ */
 
@@ -385,6 +490,8 @@ class ClaimController extends Controller
             'breakfast' => $claim->breakfast,
             'lunch' => $claim->lunch,
             'dinner' => $claim->dinner,
+            'meal_direction' => $claim->meal_direction,
+            'credit_to_balance' => (bool) ($claim->credit_to_balance ?? true),
             'claim_date' => $claim->claim_date?->format('j M Y'),
             'payment_method' => $claim->payment_method,
             'review_notes' => $claim->review_notes,

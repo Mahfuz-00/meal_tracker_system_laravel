@@ -39,6 +39,52 @@ export const NAV_SECTIONS = [
      * reachable from it.
      * ------------------------------------------------------------------ */
     {
+        /*
+         * MEAL & SCHEDULE - the member's UNIFIED meal hub. Scheduling, the
+         * daily meal log, voting/suggestions and meal claims all live here, so
+         * related navigation is not scattered across the account section.
+         */
+        heading: 'Meal & Schedule',
+        roles: ['Member'],
+        rolesOnly: true,
+        items: [
+            {
+                label: 'Meal Schedule',
+                route: 'member.schedule',
+                match: 'member.schedule',
+                icon: 'clipboard',
+                roles: ['Member'],
+                rolesOnly: true,
+            },
+            {
+                label: 'Meal Entries',
+                route: 'member.meals',
+                match: 'member.meals',
+                icon: 'clipboard',
+                roles: ['Member'],
+                rolesOnly: true,
+            },
+            {
+                label: 'Meal Voting',
+                route: 'member.voting',
+                match: 'member.voting',
+                icon: 'chart',
+                roles: ['Member'],
+                rolesOnly: true,
+            },
+            {
+                // Missing / wrongful meal-count claims live INSIDE the meal hub.
+                label: 'Meal Claims',
+                route: 'claims.index',
+                match: 'claims.index',
+                icon: 'clipboard',
+                roles: ['Member'],
+                rolesOnly: true,
+            },
+        ],
+    },
+    {
+        // Meal-adjacent ACCOUNT views (summary / money / analytics).
         heading: 'My Account',
         roles: ['Member'],
         rolesOnly: true,
@@ -50,15 +96,6 @@ export const NAV_SECTIONS = [
                 route: 'member.dashboard',
                 match: 'member.dashboard',
                 icon: 'dashboard',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                // Own meal entries, day by day.
-                label: 'Meal Entries',
-                route: 'member.meals',
-                match: 'member.meals',
-                icon: 'clipboard',
                 roles: ['Member'],
                 rolesOnly: true,
             },
@@ -80,30 +117,20 @@ export const NAV_SECTIONS = [
                 roles: ['Member'],
                 rolesOnly: true,
             },
+        ],
+    },
+    {
+        // FINANCE (member): out-of-pocket expense + missing-deposit claims,
+        // deliberately separate from Meal & Schedule claims.
+        heading: 'Finance',
+        roles: ['Member'],
+        rolesOnly: true,
+        items: [
             {
-                // Own claim submissions + status tracking.
-                label: 'My Claims',
-                route: 'claims.index',
-                match: 'claims.index',
-                icon: 'clipboard',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                // Tell the manager which meals I will / won't take.
-                label: 'Meal Schedule',
-                route: 'member.schedule',
-                match: 'member.schedule',
-                icon: 'clipboard',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                // Vote on admin-configured options + submit meal suggestions.
-                label: 'Meal Voting',
-                route: 'member.voting',
-                match: 'member.voting',
-                icon: 'chart',
+                label: 'Expense Claims',
+                route: 'expense-claims.index',
+                match: 'expense-claims.index',
+                icon: 'bank',
                 roles: ['Member'],
                 rolesOnly: true,
             },
@@ -216,7 +243,7 @@ export const NAV_SECTIONS = [
          * session via the `can()` check on the underlying permissions - but the
          * SSA's DEFAULT nav (above) shows none of it.
          */
-        heading: 'Meal Management',
+        heading: 'Meal & Schedule',
         roles: ['Institution Admin', 'Meal Manager'],
         rolesOnly: true,
         // Also shown to an SSA who has explicitly switched INTO a workspace
@@ -303,6 +330,21 @@ export const NAV_SECTIONS = [
                 match: 'meals.voting.*',
                 icon: 'chart',
                 permission: 'meals.manage',
+            },
+        ],
+    },
+    {
+        // FINANCE (staff): review financial claims only - never meal disputes.
+        heading: 'Finance',
+        roles: ['Institution Admin', 'Meal Manager'],
+        rolesOnly: true,
+        items: [
+            {
+                label: 'Expense Claims',
+                route: 'expense-claims.review',
+                match: 'expense-claims.*',
+                icon: 'bank',
+                permission: 'claims.review',
             },
         ],
     },

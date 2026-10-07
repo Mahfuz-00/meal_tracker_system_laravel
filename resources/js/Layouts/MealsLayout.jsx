@@ -25,6 +25,7 @@ const TABS = [
     { label: 'Reports', route: 'meals.reports.index', match: 'meals.reports.*', permission: 'meals.reports' },
     { label: 'Meal Schedules', route: 'meals.schedules.index', match: 'meals.schedules.*', permission: 'meals.manage' },
     { label: 'Voting & Suggestions', route: 'meals.voting.index', match: 'meals.voting.*', permission: 'meals.manage' },
+    { label: 'Meal Claims', route: 'claims.review', match: 'claims.review', permission: 'claims.review' },
 ];
 
 export default function MealsLayout({ title, description, actions, hint = null, children }) {
@@ -92,7 +93,7 @@ export default function MealsLayout({ title, description, actions, hint = null, 
         <AuthenticatedLayout
             header={
                 <h2 className="font-semibold text-xl text-slate-800 leading-tight">
-                    {title || t('Meal Management')}
+                    {title || t('Meal & Schedule')}
                 </h2>
             }
         >

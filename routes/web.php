@@ -109,6 +109,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/voting', [MealVotingController::class, 'memberIndex'])->name('voting');
         Route::post('/voting/vote', [MealVotingController::class, 'vote'])->name('voting.vote');
         Route::post('/voting/suggest', [MealVotingController::class, 'suggest'])->name('voting.suggest');
+
+        // FINANCE module (member): out-of-pocket purchases + missing deposits.
+        Route::get('/expense-claims', [ClaimController::class, 'expenses'])->name('expense-claims.index');
     });
 
     // Forced / voluntary password change. Reachable even while a user still
@@ -151,6 +154,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->middleware('permission:claims.review');
     Route::patch('/claims/{claim}/reject', [ClaimController::class, 'reject'])
         ->name('claims.reject')
+        ->middleware('permission:claims.review');
+
+    /*
+     * FINANCE MODULE - the manager's review queue for FINANCIAL claims only
+     * (out-of-pocket purchases and missing deposits). Meal-count disputes are
+     * reviewed separately inside the Meal & Schedule module.
+     */
+    Route::get('/finance/expense-claims', [ClaimController::class, 'expenseReview'])
+        ->name('expense-claims.review')
         ->middleware('permission:claims.review');
 
     // The standalone "Add Transaction" module was removed: Cash In is now a

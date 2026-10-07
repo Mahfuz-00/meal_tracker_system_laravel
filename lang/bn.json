@@ -189,5 +189,11 @@
     "Global Audit Log": "গ্লোবাল অডিট লগ",
     "Institution": "প্রতিষ্ঠান",
     "Open navigation": "নেভিগেশন খুলুন",
-    "Shared meals, tracked": "সাধারণ খাবার, হিসাবভুক্ত"
+    "Shared meals, tracked": "সাধারণ খাবার, হিসাবভুক্ত",
+    "Meal & Schedule": "খাবার ও সময়সূচি",
+    "Meal Schedule": "খাবারের সময়সূচি",
+    "Meal Voting": "খাবার ভোটিং",
+    "Meal Claims": "খাবারের দাবি",
+    "Finance": "অর্থ",
+    "Expense Claims": "খরচের দাবি"
 }

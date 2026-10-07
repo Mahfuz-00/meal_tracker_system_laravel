@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Models\Concerns\BelongsToInstitution;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Schema;
 
 /**
  * A member's meal scheduling / off-on rule.
@@ -44,6 +45,20 @@ class MealSchedule extends Model
         'lunch' => 'boolean',
         'dinner' => 'boolean',
     ];
+
+    /**
+     * A pre-existing (other-branch) `meal_schedules` may still enforce a NOT NULL
+     * `starts_on` column. Mirror our `start_date` into it on save so an insert
+     * never violates that constraint - we neither drop nor alter the old column.
+     */
+    protected static function booted(): void
+    {
+        static::saving(function (MealSchedule $schedule) {
+            if ($schedule->start_date && Schema::hasColumn('meal_schedules', 'starts_on')) {
+                $schedule->setAttribute('starts_on', $schedule->start_date);
+            }
+        });
+    }
 
     public const RECURRENCES = [
         'one_time' => 'One time',

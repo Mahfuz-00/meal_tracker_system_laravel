@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MealsLayout from '@/Layouts/MealsLayout';
 import useTerminology from '@/Utils/useTerminology';
 import { Head, router } from '@inertiajs/react';
@@ -11,6 +11,16 @@ import { Head, router } from '@inertiajs/react';
  */
 export default function Index({ week = '', options = [], suggestions = [] }) {
     const { t } = useTerminology();
+
+    // REAL-TIME: refresh the vote tallies + suggestions board periodically so
+    // managers see member activity as it happens.
+    useEffect(() => {
+        const timer = setInterval(() => {
+            router.reload({ only: ['options', 'suggestions', 'week'], preserveScroll: true, preserveState: true });
+        }, 15000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     const totalVotes = options.reduce((sum, o) => sum + (o.votes || 0), 0);
     const changeWeek = (value) => {

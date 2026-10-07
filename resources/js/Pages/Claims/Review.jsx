@@ -199,6 +199,9 @@ export default function Review({ claims, stats = {}, kinds = [], filters = {} })
                                                     <span className="rounded bg-slate-100 px-2 py-0.5 font-medium text-slate-600">
                                                         B:{claim.breakfast || 0} L:{claim.lunch || 0} D:{claim.dinner || 0}
                                                     </span>
+                                                    <span className={`rounded px-2 py-0.5 font-semibold ${claim.meal_direction === 'remove' ? 'bg-amber-50 text-amber-700' : 'bg-emerald-50 text-emerald-700'}`}>
+                                                        {claim.meal_direction === 'remove' ? 'Remove (over-counted)' : 'Add back (missed)'}
+                                                    </span>
                                                 </div>
                                             )}
 

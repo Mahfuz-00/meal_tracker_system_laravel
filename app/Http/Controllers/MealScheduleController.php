@@ -144,6 +144,11 @@ class MealScheduleController extends Controller
     /** Does a schedule apply on the given date, honouring its recurrence? */
     protected function appliesOn(MealSchedule $schedule, string $date): bool
     {
+        // Rows inherited from an older schema may have no start_date.
+        if (! $schedule->start_date) {
+            return false;
+        }
+
         $day = Carbon::parse($date);
         $start = $schedule->start_date;
 

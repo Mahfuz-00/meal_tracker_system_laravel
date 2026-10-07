@@ -166,8 +166,18 @@ trait DuskDatabase
     protected function duskSchemaExists(): bool
     {
         try {
-            return DB::connection('sqlite')->getSchemaBuilder()->hasTable('users')
-                && DB::connection('sqlite')->getSchemaBuilder()->hasTable('institutions');
+            $schema = DB::connection('sqlite')->getSchemaBuilder();
+
+            // Core tables AND the newest feature tables. If a feature table is
+            // missing (e.g. a stale test DB from before the migration existed),
+            // the schema is treated as absent so `migrate:fresh` regenerates a
+            // database that matches the code - avoiding "no such table"/"no such
+            // column" errors during the run.
+            return $schema->hasTable('users')
+                && $schema->hasTable('institutions')
+                && $schema->hasTable('meal_votes')
+                && $schema->hasTable('meal_vote_options')
+                && $schema->hasTable('meal_suggestions');
         } catch (\Throwable $e) {
             return false;
         }

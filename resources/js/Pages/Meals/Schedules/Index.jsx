@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import MealsLayout from '@/Layouts/MealsLayout';
 import useTerminology from '@/Utils/useTerminology';
 import { Head, router } from '@inertiajs/react';
@@ -12,6 +12,16 @@ import { Head, router } from '@inertiajs/react';
  */
 export default function Index({ schedules = [], date = '', onDate = [] }) {
     const { t } = useTerminology();
+
+    // REAL-TIME: members set schedules from their own portal, so this board
+    // refreshes itself periodically to reflect new activity without a reload.
+    useEffect(() => {
+        const timer = setInterval(() => {
+            router.reload({ only: ['schedules', 'onDate', 'date'], preserveScroll: true, preserveState: true });
+        }, 15000);
+
+        return () => clearInterval(timer);
+    }, []);
 
     const changeDate = (value) => {
         router.get(route('meals.schedules.index'), { date: value }, { preserveState: true, preserveScroll: true, replace: true });
