@@ -186,7 +186,9 @@ class MemberDashboardController extends Controller
             return Inertia::render('Member/Deposits', ['hasMemberRecord' => false]);
         }
 
-        $deposits = Deposit::query()
+        // Include the member's own PENDING submissions so they can track them
+        // (the model's global scope would otherwise hide them).
+        $deposits = Deposit::withoutGlobalScope('approved')
             ->where('student_id', $student->id)
             ->orderByDesc('created_at')
             ->paginate(20)
@@ -197,7 +199,10 @@ class MemberDashboardController extends Controller
                 'method' => $d->payment_method,
                 'kind' => $d->kind,
                 'notes' => $d->notes,
+                'reference' => $d->reference,
                 'reversed' => $d->reversed_at !== null,
+                'status' => $d->status ?? 'approved',
+                'status_label' => $d->statusLabel(),
                 'date' => $d->created_at?->format('j M Y'),
             ]);
 
@@ -206,11 +211,18 @@ class MemberDashboardController extends Controller
             ->whereNull('reversed_at')
             ->sum('amount');
 
+        $pending = Deposit::withoutGlobalScope('approved')
+            ->where('student_id', $student->id)
+            ->where('status', 'pending')
+            ->count();
+
         return Inertia::render('Member/Deposits', [
             'hasMemberRecord' => true,
             'member' => ['name' => $student->name, 'roll' => $student->roll],
             'deposits' => $deposits,
             'totalDeposited' => $total,
+            'pendingCount' => $pending,
+            'paymentMethods' => ['Online Gateway', 'Bank Transfer', 'Mobile Banking', 'Cash'],
         ]);
     }
 

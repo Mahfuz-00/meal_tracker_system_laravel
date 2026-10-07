@@ -85,4 +85,28 @@ class MemberMealSchedulingTest extends DuskTestCase
                 ->assertSee($student->name);
         });
     }
+
+    public function test_a_schedule_for_a_past_date_is_rejected(): void
+    {
+        $this->seedRbac();
+        $institution = $this->makeInstitution();
+        $member = $this->makeMember($institution, ['name' => 'Nusrat Jahan']);
+        $student = Student::where('user_id', $member->id)->firstOrFail();
+
+        $this->step('Member', 'Meal Schedule', 'try to schedule a past date', __LINE__);
+
+        // Yesterday is gone - a member may only speak for today and the future.
+        $this->httpAs($member)->post('/my/schedule', [
+            'start_date' => now()->subDay()->toDateString(),
+            'recurrence' => 'one_time',
+            'taking_meals' => false,
+            'breakfast' => true,
+            'lunch' => true,
+            'dinner' => true,
+        ])->assertSessionHasErrors('start_date');
+
+        $this->assertDatabaseMissing('meal_schedules', [
+            'student_id' => $student->id,
+        ]);
+    }
 }

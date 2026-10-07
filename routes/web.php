@@ -109,6 +109,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/voting', [MealVotingController::class, 'memberIndex'])->name('voting');
         Route::post('/voting/vote', [MealVotingController::class, 'vote'])->name('voting.vote');
         Route::post('/voting/suggest', [MealVotingController::class, 'suggest'])->name('voting.suggest');
+
+        // A member submits a payment they made; it stays PENDING until a manager
+        // approves it (the Deposit model's global scope keeps it off the balance).
+        Route::post('/deposits', [DepositController::class, 'memberStore'])->name('deposits.store');
     });
 
     // Forced / voluntary password change. Reachable even while a user still
@@ -546,6 +550,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         // Reverse a deposit: keeps the row, flags it and posts a counter entry.
         Route::patch('deposits/{deposit}/reverse', [DepositController::class, 'reverse'])
             ->name('deposits.reverse')
+            ->middleware('permission:meals.deposit');
+
+        // Review member-submitted payments: approve credits the member's balance
+        // (posts the cash-in), reject leaves the balance untouched.
+        Route::patch('deposits/{deposit}/approve', [DepositController::class, 'approve'])
+            ->name('deposits.approve')
+            ->middleware('permission:meals.deposit');
+        Route::patch('deposits/{deposit}/reject', [DepositController::class, 'reject'])
+            ->name('deposits.reject')
             ->middleware('permission:meals.deposit');
         Route::get('deposits/export', [DepositController::class, 'export'])
             ->name('deposits.export')

@@ -53,7 +53,7 @@ function Flash({ success, error }) {
     );
 }
 
-export default function Index({ deposits, students, kinds, filteredTotal, personalTotal, subsidyAllocated, subsidyGrants, filters }) {
+export default function Index({ deposits, pendingDeposits = [], students, kinds, filteredTotal, personalTotal, subsidyAllocated, subsidyGrants, filters }) {
     const { can } = useCan();
     const { t, tTitle } = useTerminology();
     const { t: translate } = useTranslation();
@@ -145,6 +145,32 @@ export default function Index({ deposits, students, kinds, filteredTotal, person
         router.patch(route('meals.deposits.reverse', deposit.id), {}, { preserveScroll: true });
     };
 
+    // Review a member-submitted payment: approving credits their balance,
+    // rejecting leaves the balance untouched.
+    const approvePayment = async (deposit) => {
+        const ok = await confirm({
+            title: 'Approve this payment?',
+            message: `${money(deposit.amount, false)} will be credited to ${deposit.student?.name || 'the member'}'s balance.`,
+            tone: 'accent',
+            confirmLabel: 'Approve & credit',
+        });
+        if (!ok) return;
+
+        router.patch(route('meals.deposits.approve', deposit.id), {}, { preserveScroll: true });
+    };
+
+    const rejectPayment = async (deposit) => {
+        const ok = await confirm({
+            title: 'Reject this payment?',
+            message: 'The member’s balance will not change.',
+            tone: 'danger',
+            confirmLabel: 'Reject payment',
+        });
+        if (!ok) return;
+
+        router.patch(route('meals.deposits.reject', deposit.id), {}, { preserveScroll: true });
+    };
+
     const applyFilters = (next) => {
         router.get(
             route('meals.deposits.index'),
@@ -200,6 +226,54 @@ export default function Index({ deposits, students, kinds, filteredTotal, person
             <Head title="Deposits" />
 
             <Flash success={flash?.success} error={flash?.error} />
+
+            {/* Member-submitted payments awaiting approval. */}
+            {pendingDeposits.length > 0 && (
+                <div className="overflow-hidden rounded-xl border-amber-200 bg-amber-50/40 shadow-sm">
+                    <div className="flex items-center justify-between border-b border-amber-100 px-6 py-4">
+                        <div>
+                            <h3 className="text-base font-bold text-slate-900">Pending approval</h3>
+                            <p className="text-xs text-slate-500">
+                                Payments members submitted from their portal - the balance is credited only on approval.
+                            </p>
+                        </div>
+                        <span className="rounded-full bg-amber-500 px-2.5 py-0.5 text-xs font-bold text-white">
+                            {pendingDeposits.length}
+                        </span>
+                    </div>
+                    <ul className="divide-y divide-amber-100">
+                        {pendingDeposits.map((payment) => (
+                            <li key={payment.id} className="flex flex-col gap-3 px-6 py-4 sm:flex-row sm:items-center sm:justify-between">
+                                <div className="min-w-0">
+                                    <div className="font-semibold text-slate-900">
+                                        {payment.student?.name || 'Member'}
+                                        {payment.student?.roll ? ` (${payment.student.roll})` : ''}
+                                    </div>
+                                    <div className="mt-0.5 text-xs text-slate-500">
+                                        {money(payment.amount, false)}
+                                        {payment.payment_method ? ` · ${payment.payment_method}` : ''}
+                                        {payment.reference ? ` · Ref ${payment.reference}` : ''}
+                                        {payment.date ? ` · ${payment.date}` : ''}
+                                    </div>
+                                    {payment.notes && <p className="mt-1 text-xs text-slate-500">{payment.notes}</p>}
+                                </div>
+                                {canRecord && (
+                                    <div className="flex flex-shrink-0 gap-2">
+                                        <button type="button" onClick={() => approvePayment(payment)}
+                                            className="rounded-lg bg-emerald-600 px-3.5 py-1.5 text-xs font-bold text-white transition-colors hover:bg-emerald-700">
+                                            Approve
+                                        </button>
+                                        <button type="button" onClick={() => rejectPayment(payment)}
+                                            className="rounded-lg border-rose-200 bg-white px-3.5 py-1.5 text-xs font-bold text-rose-600 transition-colors hover:bg-rose-50">
+                                            Reject
+                                        </button>
+                                    </div>
+                                )}
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            )}
 
             {/* Totals: personal deposits and subsidies reported separately. */}
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">

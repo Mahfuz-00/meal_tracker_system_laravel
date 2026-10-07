@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use App\Models\Claim;
+use App\Models\Deposit;
 use App\Models\Institution;
 use App\Models\MealSchedule;
 use App\Models\MealSuggestion;
@@ -197,6 +198,25 @@ class Notifier
             [
                 'url' => route('member.dashboard', [], false),
                 'amount' => $amount,
+            ],
+            $actor?->id,
+        );
+    }
+
+    /** A member submitted a deposit payment from the portal: tell their manager + admins. */
+    public static function depositSubmitted(Deposit $deposit, ?User $actor = null): void
+    {
+        $student = $deposit->student;
+
+        static::send(
+            static::memberOversight($student),
+            'deposit_submitted',
+            'Payment submitted by ' . ($student?->name ?? 'a member'),
+            number_format((float) $deposit->amount, 2) . ' via ' . ($deposit->payment_method ?: 'a payment method') . ' - awaiting approval.',
+            [
+                'url' => route('meals.deposits.index', [], false),
+                'deposit_id' => $deposit->id,
+                'amount' => (float) $deposit->amount,
             ],
             $actor?->id,
         );

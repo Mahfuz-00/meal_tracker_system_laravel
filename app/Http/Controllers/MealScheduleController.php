@@ -50,7 +50,10 @@ class MealScheduleController extends Controller
         }
 
         $data = $request->validate([
-            'start_date' => ['required', 'date'],
+            // Past schedules are already gone: a member may only speak for today
+            // and the future. (Meal CLAIMS are the opposite - they dispute meals
+            // already recorded in the past.)
+            'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'recurrence' => ['required', Rule::in(array_keys(MealSchedule::RECURRENCES))],
             'interval_days' => ['nullable', 'integer', 'min:1', 'max:60'],
@@ -59,6 +62,8 @@ class MealScheduleController extends Controller
             'lunch' => ['boolean'],
             'dinner' => ['boolean'],
             'note' => ['nullable', 'string', 'max:255'],
+        ], [
+            'start_date.after_or_equal' => 'Meal schedules can only be set for today or a future date.',
         ]);
 
         if (! ($data['breakfast'] ?? true) && ! ($data['lunch'] ?? true) && ! ($data['dinner'] ?? true)) {
@@ -97,6 +102,12 @@ class MealScheduleController extends Controller
 
         if (! $student || $mealSchedule->student_id !== $student->id) {
             return back()->with('error', 'Schedule not found.');
+        }
+
+        // A schedule that has already begun (or passed) can no longer be
+        // changed - those days are gone.
+        if ($mealSchedule->start_date && $mealSchedule->start_date->isBefore(today())) {
+            return back()->with('error', 'Past schedules can no longer be changed.');
         }
 
         // Keep the row for the manager's audit trail; mark it cancelled.

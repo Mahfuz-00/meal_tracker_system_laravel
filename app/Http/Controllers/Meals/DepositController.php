@@ -71,8 +71,32 @@ class DepositController extends Controller
             ->when($to, fn ($q) => $q->whereDate('created_at', '<=', $to))
             ->sum('amount');
 
+        // Payments members submitted from their own portal, waiting for approval.
+        // (The global scope hides these from the ledger totals above.)
+        $pendingDeposits = Deposit::withoutGlobalScope('approved')
+            ->where('status', 'pending')
+            ->with('student:id,name,roll')
+            ->when($scopedIds !== null, fn ($q) => $q->whereIn('student_id', $scopedIds))
+            ->orderByDesc('created_at')
+            ->get()
+            ->map(fn (Deposit $d) => [
+                'id' => $d->id,
+                'student_id' => $d->student_id,
+                'student' => $d->student ? [
+                    'id' => $d->student->id,
+                    'name' => $d->student->name,
+                    'roll' => $d->student->roll,
+                ] : null,
+                'amount' => (float) $d->amount,
+                'payment_method' => $d->payment_method,
+                'reference' => $d->reference,
+                'notes' => $d->notes,
+                'date' => $d->created_at?->format('j M Y'),
+            ]);
+
         return Inertia::render('Meals/Deposits/Index', [
             'deposits' => $deposits,
+            'pendingDeposits' => $pendingDeposits,
             'students' => Student::query()
                 ->when($scopedIds !== null, fn ($q) => $q->whereIn('id', $scopedIds))
                 ->orderBy('name')
@@ -322,5 +346,122 @@ class DepositController extends Controller
 
             return back()->with('success', 'Deposit reversed. A matching cash-out was posted.');
         });
+    }
+
+    /* ------------------------------------------------------------------ *
+     * MEMBER-SUBMITTED PAYMENTS (pending approval workflow)
+     * ------------------------------------------------------------------ */
+
+    /**
+     * A member submits a payment they made (online gateway / bank / mobile
+     * banking). It starts PENDING and is credited only once a manager approves
+     * it, so nothing hits the balance until it is verified.
+     */
+    public function memberStore(Request $request)
+    {
+        $student = $request->user()->studentRecord();
+
+        if (! $student) {
+            return back()->with('error', 'Your account is not linked to a member record yet.');
+        }
+
+        $data = $request->validate([
+            'amount' => 'required|numeric|min:0.01',
+            'payment_method' => 'required|string|max:255',
+            'reference' => 'nullable|string|max:255',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+
+        $deposit = Deposit::create([
+            'institution_id' => $student->institution_id,
+            'student_id' => $student->id,
+            'amount' => $data['amount'],
+            'kind' => 'personal',
+            'payment_method' => $data['payment_method'],
+            'reference' => $data['reference'] ?? null,
+            'notes' => $data['notes'] ?? null,
+            'status' => 'pending',
+            'submitted_by' => $request->user()->id,
+        ]);
+
+        Notifier::depositSubmitted($deposit, $request->user());
+
+        return back()->with('success', 'Payment submitted. It will be credited once your manager approves it.');
+    }
+
+    /**
+     * Approve a member-submitted payment: post the cash-in transaction and mark
+     * the deposit approved, so it now counts toward the member's balance.
+     */
+    public function approve(Request $request, Deposit $deposit)
+    {
+        if (! $deposit->isPending()) {
+            return back()->with('error', 'This payment is no longer pending.');
+        }
+
+        DB::transaction(function () use ($request, $deposit) {
+            $student = $deposit->student;
+
+            $tx = Transaction::create([
+                'user_id' => $request->user()->id,
+                'student_id' => $deposit->student_id,
+                'type' => 'in',
+                'item' => 'Meal Deposit for ' . ($student?->name ?? 'member'),
+                'amount' => $deposit->amount,
+                'category' => 'Meal Deposit',
+                'payment_method' => $deposit->payment_method,
+                'by_whom' => $student?->name,
+                'reason' => $deposit->notes,
+                'source' => 'deposit',
+            ]);
+
+            $deposit->update([
+                'status' => 'approved',
+                'recorded_by' => $request->user()->id,
+                'transaction_id' => $tx->id,
+                'reviewed_by' => $request->user()->id,
+                'reviewed_at' => now(),
+            ]);
+
+            AuditLogger::log('approved', 'approved a deposit payment from ' . ($student?->name ?? 'a member'), $deposit, [
+                'amount' => (float) $deposit->amount,
+                'reference' => $deposit->reference,
+                'transaction_id' => $tx->id,
+            ], ['subject_label' => $student?->name, 'institution_id' => $student?->institution_id]);
+
+            if ($student) {
+                Notifier::depositRecorded($student, (float) $deposit->amount, 'deposit', $request->user());
+            }
+        });
+
+        return back()->with('success', 'Payment approved and credited to the member.');
+    }
+
+    /** Reject a member-submitted payment: it never touches the balance. */
+    public function reject(Request $request, Deposit $deposit)
+    {
+        if (! $deposit->isPending()) {
+            return back()->with('error', 'This payment is no longer pending.');
+        }
+
+        $data = $request->validate([
+            'review_notes' => 'nullable|string|max:500',
+        ]);
+
+        $student = $deposit->student;
+
+        $deposit->update([
+            'status' => 'rejected',
+            'reviewed_by' => $request->user()->id,
+            'reviewed_at' => now(),
+            'review_notes' => $data['review_notes'] ?? null,
+        ]);
+
+        AuditLogger::log('rejected', 'rejected a deposit payment from ' . ($student?->name ?? 'a member'), $deposit, [
+            'amount' => (float) $deposit->amount,
+            'reference' => $deposit->reference,
+        ], ['subject_label' => $student?->name, 'institution_id' => $student?->institution_id]);
+
+        return back()->with('success', 'Payment rejected.');
     }
 }
