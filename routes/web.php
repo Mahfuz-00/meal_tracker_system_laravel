@@ -109,9 +109,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/voting', [MealVotingController::class, 'memberIndex'])->name('voting');
         Route::post('/voting/vote', [MealVotingController::class, 'vote'])->name('voting.vote');
         Route::post('/voting/suggest', [MealVotingController::class, 'suggest'])->name('voting.suggest');
-
-        // FINANCE module (member): out-of-pocket purchases + missing deposits.
-        Route::get('/expense-claims', [ClaimController::class, 'expenses'])->name('expense-claims.index');
     });
 
     // Forced / voluntary password change. Reachable even while a user still
@@ -155,6 +152,22 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::patch('/claims/{claim}/reject', [ClaimController::class, 'reject'])
         ->name('claims.reject')
         ->middleware('permission:claims.review');
+
+    /*
+     * FINANCE MODULE - the member's own financial claims (out-of-pocket
+     * purchases + missing deposits).
+     *
+     * These are declared HERE, outside the `member.` name-prefixed group, so
+     * their names are exactly `expense-claims.index` / `expense-claims.store`.
+     * (Inside that group Laravel would prefix them to `member.expense-claims.*`,
+     * which the frontend does not reference and Ziggy would not resolve.)
+     */
+    Route::get('/my/expense-claims', [ClaimController::class, 'expenses'])
+        ->name('expense-claims.index')
+        ->middleware(['permission:meals.view', 'role:Member']);
+    Route::post('/my/expense-claims', [ClaimController::class, 'store'])
+        ->name('expense-claims.store')
+        ->middleware('permission:claims.submit');
 
     /*
      * FINANCE MODULE - the manager's review queue for FINANCIAL claims only

@@ -39,82 +39,73 @@ export const NAV_SECTIONS = [
      * reachable from it.
      * ------------------------------------------------------------------ */
     {
-        /*
-         * MEAL & SCHEDULE - the member's UNIFIED meal hub. Scheduling, the
-         * daily meal log, voting/suggestions and meal claims all live here, so
-         * related navigation is not scattered across the account section.
-         */
-        heading: 'Meal & Schedule',
-        roles: ['Member'],
-        rolesOnly: true,
-        items: [
-            {
-                label: 'Meal Schedule',
-                route: 'member.schedule',
-                match: 'member.schedule',
-                icon: 'clipboard',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                label: 'Meal Entries',
-                route: 'member.meals',
-                match: 'member.meals',
-                icon: 'clipboard',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                label: 'Meal Voting',
-                route: 'member.voting',
-                match: 'member.voting',
-                icon: 'chart',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                // Missing / wrongful meal-count claims live INSIDE the meal hub.
-                label: 'Meal Claims',
-                route: 'claims.index',
-                match: 'claims.index',
-                icon: 'clipboard',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-        ],
-    },
-    {
         // Meal-adjacent ACCOUNT views (summary / money / analytics).
-        heading: 'My Account',
-        roles: ['Member'],
+        heading: "My Account",
+        roles: ["Member"],
         rolesOnly: true,
         items: [
             {
                 // The merged personal summary: current-month figures, deposits,
                 // meal history and balance all in one cohesive view.
-                label: 'Summary',
-                route: 'member.dashboard',
-                match: 'member.dashboard',
-                icon: 'dashboard',
-                roles: ['Member'],
-                rolesOnly: true,
-            },
-            {
-                // Own deposit history.
-                label: 'Deposits',
-                route: 'member.deposits',
-                match: 'member.deposits',
-                icon: 'download',
-                roles: ['Member'],
+                label: "Summary",
+                route: "member.dashboard",
+                match: "member.dashboard",
+                icon: "dashboard",
+                roles: ["Member"],
                 rolesOnly: true,
             },
             {
                 // Personal analytics, scoped exclusively to this member.
-                label: 'Analytics',
-                route: 'member.analytics',
-                match: 'member.analytics',
-                icon: 'analytics',
-                roles: ['Member'],
+                label: "Analytics",
+                route: "member.analytics",
+                match: "member.analytics",
+                icon: "analytics",
+                roles: ["Member"],
+                rolesOnly: true,
+            },
+        ],
+    },
+    {
+        /*
+         * MEAL & SCHEDULE - the member's UNIFIED meal hub. Scheduling, the
+         * daily meal log, voting/suggestions and meal claims all live here, so
+         * related navigation is not scattered across the account section.
+         */
+        heading: "Meal & Schedule",
+        roles: ["Member"],
+        rolesOnly: true,
+        items: [
+            {
+                label: "Meal Schedule",
+                route: "member.schedule",
+                match: "member.schedule",
+                icon: "clipboard",
+                roles: ["Member"],
+                rolesOnly: true,
+            },
+            {
+                label: "Meal Entries",
+                route: "member.meals",
+                match: "member.meals",
+                icon: "clipboard",
+                roles: ["Member"],
+                rolesOnly: true,
+            },
+            {
+                label: "Meal Voting",
+                route: "member.voting",
+                match: "member.voting",
+                icon: "chart",
+                roles: ["Member"],
+                rolesOnly: true,
+            },
+            {
+                // Missing / wrongful meal-count claims live INSIDE the meal hub.
+                label: "Meal Claims",
+                route: "claims.index",
+                match: "claims.index",
+                icon: "clipboard",
+                roles: ["Member"],
                 rolesOnly: true,
             },
         ],
@@ -122,16 +113,25 @@ export const NAV_SECTIONS = [
     {
         // FINANCE (member): out-of-pocket expense + missing-deposit claims,
         // deliberately separate from Meal & Schedule claims.
-        heading: 'Finance',
-        roles: ['Member'],
+        heading: "Finance",
+        roles: ["Member"],
         rolesOnly: true,
         items: [
             {
-                label: 'Expense Claims',
-                route: 'expense-claims.index',
-                match: 'expense-claims.index',
-                icon: 'bank',
-                roles: ['Member'],
+                // Own deposit history.
+                label: "Deposits",
+                route: "member.deposits",
+                match: "member.deposits",
+                icon: "download",
+                roles: ["Member"],
+                rolesOnly: true,
+            },
+            {
+                label: "Expense Claims",
+                route: "expense-claims.index",
+                match: "expense-claims.index",
+                icon: "bank",
+                roles: ["Member"],
                 rolesOnly: true,
             },
         ],
@@ -152,83 +152,83 @@ export const NAV_SECTIONS = [
          * Dashboard" action inside the Institution Directory, which switches the
          * session tenant and reveals the tenant modules below.
          */
-        heading: 'Platform Overview',
-        roles: ['Software Super Admin'],
+        heading: "Platform Overview",
+        roles: ["Software Super Admin"],
         rolesOnly: true,
         items: [
             {
                 // The SSA's landing page IS the platform monitoring dashboard.
-                label: 'Business Dashboard',
-                route: 'ssa.dashboard',
-                match: 'ssa.dashboard',
-                icon: 'dashboard',
+                label: "Business Dashboard",
+                route: "ssa.dashboard",
+                match: "ssa.dashboard",
+                icon: "dashboard",
             },
             {
                 // Platform-wide SaaS financial engine (MRR/ARR, conversion).
-                label: 'SaaS Analytics',
-                route: 'ssa.analytics',
-                match: 'ssa.analytics',
-                icon: 'analytics',
+                label: "SaaS Analytics",
+                route: "ssa.analytics",
+                match: "ssa.analytics",
+                icon: "analytics",
             },
             {
-                label: 'Institution Directory',
-                route: 'settings.institutions.index',
-                match: 'settings.institutions.*',
-                icon: 'building',
+                label: "Institution Directory",
+                route: "settings.institutions.index",
+                match: "settings.institutions.*",
+                icon: "building",
             },
             {
-                label: 'Trial & Subscriptions',
-                route: 'settings.trials.index',
-                match: 'settings.trials.*',
-                icon: 'bank',
+                label: "Trial & Subscriptions",
+                route: "settings.trials.index",
+                match: "settings.trials.*",
+                icon: "bank",
             },
             {
                 // SSA-only: create/edit pricing tiers and assign them.
-                label: 'Pricing & Plans',
-                route: 'ssa.plans.index',
-                match: 'ssa.plans.*',
-                icon: 'bank',
-                permission: 'plans.view',
+                label: "Pricing & Plans",
+                route: "ssa.plans.index",
+                match: "ssa.plans.*",
+                icon: "bank",
+                permission: "plans.view",
             },
             {
-                label: 'Security & Audit',
-                route: 'ssa.audit.index',
-                match: 'ssa.audit.*',
-                icon: 'clipboard',
+                label: "Security & Audit",
+                route: "ssa.audit.index",
+                match: "ssa.audit.*",
+                icon: "clipboard",
             },
             {
                 // Public demo requests / leads the SSA can approve into trials.
-                label: 'Landing Enquiries',
-                route: 'ssa.enquiries.index',
-                match: 'ssa.enquiries.*',
-                icon: 'clipboard',
+                label: "Landing Enquiries",
+                route: "ssa.enquiries.index",
+                match: "ssa.enquiries.*",
+                icon: "clipboard",
             },
             {
-                label: 'Broadcasts',
-                route: 'ssa.broadcasts.index',
-                match: 'ssa.broadcasts.*',
-                icon: 'mail',
+                label: "Broadcasts",
+                route: "ssa.broadcasts.index",
+                match: "ssa.broadcasts.*",
+                icon: "mail",
             },
         ],
     },
     {
-        heading: 'Workspace Overview',
-        roles: ['Institution Admin', 'Meal Manager'],
+        heading: "Workspace Overview",
+        roles: ["Institution Admin", "Meal Manager"],
         rolesOnly: true,
         items: [
             {
                 // Org-wide dashboard for tenant staff.
-                label: 'Dashboard',
-                route: 'dashboard',
-                match: 'dashboard',
-                icon: 'dashboard',
+                label: "Dashboard",
+                route: "dashboard",
+                match: "dashboard",
+                icon: "dashboard",
             },
             {
                 // Org-wide analytics; members get their own under My Account.
-                label: 'Analytics',
-                route: 'analytics',
-                icon: 'analytics',
-                permission: 'transactions.view',
+                label: "Analytics",
+                route: "analytics",
+                icon: "analytics",
+                permission: "transactions.view",
             },
         ],
     },
@@ -243,8 +243,8 @@ export const NAV_SECTIONS = [
          * session via the `can()` check on the underlying permissions - but the
          * SSA's DEFAULT nav (above) shows none of it.
          */
-        heading: 'Meal & Schedule',
-        roles: ['Institution Admin', 'Meal Manager'],
+        heading: "Meal & Schedule",
+        roles: ["Institution Admin", "Meal Manager"],
         rolesOnly: true,
         // Also shown to an SSA who has explicitly switched INTO a workspace
         // (session tenant set). The renderer checks `tenantScoped` against the
@@ -254,97 +254,97 @@ export const NAV_SECTIONS = [
             {
                 // termKey lets the label follow the institution type
                 // (Students / Employees / Boarders) with no code change.
-                label: 'Members',
-                termKey: 'members',
-                route: 'meals.students.index',
-                match: 'meals.students.*',
-                icon: 'users',
-                permission: 'students.view',
+                label: "Members",
+                termKey: "members",
+                route: "meals.students.index",
+                match: "meals.students.*",
+                icon: "users",
+                permission: "students.view",
             },
             {
-                label: 'Subsidies',
-                route: 'meals.subsidies.index',
-                match: 'meals.subsidies.*',
-                icon: 'bank',
-                permission: 'subsidies.view',
+                label: "Subsidies",
+                route: "meals.subsidies.index",
+                match: "meals.subsidies.*",
+                icon: "bank",
+                permission: "subsidies.view",
             },
             {
-                label: 'Departments',
-                termKey: 'departments',
-                route: 'meals.departments.index',
-                icon: 'building',
-                permission: 'departments.view',
+                label: "Departments",
+                termKey: "departments",
+                route: "meals.departments.index",
+                icon: "building",
+                permission: "departments.view",
             },
             {
-                label: 'Deposits',
-                termKey: 'deposits',
-                route: 'meals.deposits.index',
-                icon: 'download',
-                permission: 'meals.deposit',
+                label: "Deposits",
+                termKey: "deposits",
+                route: "meals.deposits.index",
+                icon: "download",
+                permission: "meals.deposit",
             },
             {
-                label: 'Meal Entries',
-                route: 'meals.entries.index',
-                icon: 'clipboard',
-                permission: 'meals.entry',
+                label: "Meal Entries",
+                route: "meals.entries.index",
+                icon: "clipboard",
+                permission: "meals.entry",
             },
             {
-                label: 'Expenses',
-                route: 'meals.expenses.index',
-                icon: 'receipt',
-                permission: 'meals.expense',
+                label: "Expenses",
+                route: "meals.expenses.index",
+                icon: "receipt",
+                permission: "meals.expense",
             },
             {
-                label: 'Vendors',
-                route: 'meals.vendors.index',
-                match: 'meals.vendors.*',
-                icon: 'store',
-                permission: 'vendors.view',
+                label: "Vendors",
+                route: "meals.vendors.index",
+                match: "meals.vendors.*",
+                icon: "store",
+                permission: "vendors.view",
             },
             {
-                label: 'Meal Reports',
-                route: 'meals.reports.index',
-                icon: 'chart',
-                permission: 'meals.reports',
+                label: "Meal Reports",
+                route: "meals.reports.index",
+                icon: "chart",
+                permission: "meals.reports",
             },
             {
                 // Manager-only: review the claims members have raised.
-                label: 'Claim Review',
-                route: 'claims.review',
-                match: 'claims.review',
-                icon: 'clipboard',
-                permission: 'claims.review',
+                label: "Claim Review",
+                route: "claims.review",
+                match: "claims.review",
+                icon: "clipboard",
+                permission: "claims.review",
             },
             {
                 // Member off/on schedules ("who is off today").
-                label: 'Meal Schedules',
-                route: 'meals.schedules.index',
-                match: 'meals.schedules.*',
-                icon: 'clipboard',
-                permission: 'meals.manage',
+                label: "Meal Schedules",
+                route: "meals.schedules.index",
+                match: "meals.schedules.*",
+                icon: "clipboard",
+                permission: "meals.manage",
             },
             {
                 // Voting tallies + member suggestions.
-                label: 'Voting & Suggestions',
-                route: 'meals.voting.index',
-                match: 'meals.voting.*',
-                icon: 'chart',
-                permission: 'meals.manage',
+                label: "Voting & Suggestions",
+                route: "meals.voting.index",
+                match: "meals.voting.*",
+                icon: "chart",
+                permission: "meals.manage",
             },
         ],
     },
     {
         // FINANCE (staff): review financial claims only - never meal disputes.
-        heading: 'Finance',
-        roles: ['Institution Admin', 'Meal Manager'],
+        heading: "Finance",
+        roles: ["Institution Admin", "Meal Manager"],
         rolesOnly: true,
         items: [
             {
-                label: 'Expense Claims',
-                route: 'expense-claims.review',
-                match: 'expense-claims.*',
-                icon: 'bank',
-                permission: 'claims.review',
+                label: "Expense Claims",
+                route: "expense-claims.review",
+                match: "expense-claims.*",
+                icon: "bank",
+                permission: "claims.review",
             },
         ],
     },
@@ -356,36 +356,36 @@ export const NAV_SECTIONS = [
      * section (rolesOnly), and get their own Account block at the very bottom.
      * ------------------------------------------------------------------ */
     {
-        heading: 'Account',
-        roles: ['Software Super Admin', 'Institution Admin', 'Meal Manager'],
+        heading: "Account",
+        roles: ["Software Super Admin", "Institution Admin", "Meal Manager"],
         rolesOnly: true,
         items: [
             {
-                label: 'Profile Manager',
-                route: 'profile.edit',
-                match: 'profile.*',
-                icon: 'users',
+                label: "Profile Manager",
+                route: "profile.edit",
+                match: "profile.*",
+                icon: "users",
                 permission: null,
             },
             {
                 // User Management lives in the Account module (above Settings).
                 // Admins and the SSA ONLY - a Meal Manager never sees it.
-                label: 'User Manager',
-                route: 'settings.users.index',
-                match: 'settings.users.*',
-                icon: 'users',
-                permission: 'users.view',
-                roles: ['Software Super Admin', 'Institution Admin'],
+                label: "User Manager",
+                route: "settings.users.index",
+                match: "settings.users.*",
+                icon: "users",
+                permission: "users.view",
+                roles: ["Software Super Admin", "Institution Admin"],
                 rolesOnly: true,
             },
             {
                 // Theme Customizer: a dedicated settings sub-module available to
                 // EVERY user. No permission gate - personalising one's own view
                 // is a personal preference, not an administrative act.
-                label: 'Theme Customizer',
-                route: 'settings.theme.edit',
-                match: 'settings.theme.*',
-                icon: 'settings',
+                label: "Theme Customizer",
+                route: "settings.theme.edit",
+                match: "settings.theme.*",
+                icon: "settings",
                 permission: null,
             },
         ],
@@ -399,69 +399,69 @@ export const NAV_SECTIONS = [
          * and belong strictly inside that tenant's workspace. The SSA reaches
          * them only by switching into an institution, never from the global view.
          */
-        heading: 'Workspace Settings',
-        roles: ['Institution Admin', 'Meal Manager'],
+        heading: "Workspace Settings",
+        roles: ["Institution Admin", "Meal Manager"],
         rolesOnly: true,
         tenantScoped: true,
         items: [
             {
-                label: 'Settings',
-                icon: 'settings',
+                label: "Settings",
+                icon: "settings",
                 // Group is visible if the user can reach ANY child. The renderer
                 // prunes children first, then hides the group if nothing remains.
                 permission: null,
                 children: [
                     {
-                        label: 'Institution',
-                        route: 'settings.institution.edit',
-                        match: 'settings.institution.*',
-                        icon: 'bank',
-                        permission: 'institution.view',
+                        label: "Institution",
+                        route: "settings.institution.edit",
+                        match: "settings.institution.*",
+                        icon: "bank",
+                        permission: "institution.view",
                     },
                     {
                         // The workspace's invite code - the key a member types on
                         // the public sign-up form to join this institution.
-                        label: 'Invite Code',
-                        route: 'settings.invite-code.show',
-                        match: 'settings.invite-code.*',
-                        icon: 'users',
-                        permission: 'institution.view',
+                        label: "Invite Code",
+                        route: "settings.invite-code.show",
+                        match: "settings.invite-code.*",
+                        icon: "users",
+                        permission: "institution.view",
                     },
                     {
                         // Currency format for THIS institution. Institution Admins
                         // manage it (currency.manage); managers can view only.
-                        label: 'Currency Manager',
-                        route: 'settings.currency',
-                        match: 'settings.currency',
-                        permission: 'currency.view',
+                        label: "Currency Manager",
+                        route: "settings.currency",
+                        match: "settings.currency",
+                        permission: "currency.view",
                     },
                     {
-                        label: 'Subsidy Sources',
-                        route: 'settings.subsidy-sources.index',
-                        match: 'settings.subsidy-sources.*',
-                        permission: 'subsidies.manage',
+                        label: "Subsidy Sources",
+                        route: "settings.subsidy-sources.index",
+                        match: "settings.subsidy-sources.*",
+                        permission: "subsidies.manage",
                     },
                     {
                         // Admin-configured meal voting choices.
-                        label: 'Meal Voting',
-                        route: 'settings.meal-voting.index',
-                        match: 'settings.meal-voting.*',
-                        icon: 'chart',
-                        permission: 'meals.voting.manage',
+                        label: "Meal Voting",
+                        route: "settings.meal-voting.index",
+                        match: "settings.meal-voting.*",
+                        icon: "chart",
+                        permission: "meals.voting.manage",
                     },
                     {
-                        label: 'Activity Log',
-                        route: 'settings.activity.index',
-                        match: 'settings.activity.*',
-                        icon: 'clipboard',
-                        permission: 'audit.view',
+                        label: "Activity Log",
+                        route: "settings.activity.index",
+                        match: "settings.activity.*",
+                        icon: "clipboard",
+                        permission: "audit.view",
                     },
                     {
-                        label: 'Email Log',
-                        route: 'settings.emails.index',
-                        match: 'settings.emails.*',
-                        icon: 'mail',
-                        permission: 'emails.view',
+                        label: "Email Log",
+                        route: "settings.emails.index",
+                        match: "settings.emails.*",
+                        icon: "mail",
+                        permission: "emails.view",
                     },
                 ],
             },
@@ -476,42 +476,42 @@ export const NAV_SECTIONS = [
          * email views span every tenant. No tenant-scoped role reaches this
          * group (rolesOnly + roles), and none of these items appear to a member.
          */
-        heading: 'Platform Settings',
-        roles: ['Software Super Admin'],
+        heading: "Platform Settings",
+        roles: ["Software Super Admin"],
         rolesOnly: true,
         items: [
             {
-                label: 'Platform Settings',
-                icon: 'settings',
+                label: "Platform Settings",
+                icon: "settings",
                 permission: null,
                 children: [
                     {
-                        label: 'Role Manager',
-                        route: 'settings.roles.index',
-                        match: 'settings.roles.*',
-                        permission: 'roles.view',
+                        label: "Role Manager",
+                        route: "settings.roles.index",
+                        match: "settings.roles.*",
+                        permission: "roles.view",
                     },
                     {
-                        label: 'Global Audit Log',
-                        route: 'settings.activity.index',
-                        match: 'settings.activity.*',
-                        icon: 'clipboard',
-                        permission: 'audit.view',
+                        label: "Global Audit Log",
+                        route: "settings.activity.index",
+                        match: "settings.activity.*",
+                        icon: "clipboard",
+                        permission: "audit.view",
                     },
                     {
-                        label: 'Email Log',
-                        route: 'settings.emails.index',
-                        match: 'settings.emails.*',
-                        icon: 'mail',
-                        permission: 'emails.view',
+                        label: "Email Log",
+                        route: "settings.emails.index",
+                        match: "settings.emails.*",
+                        icon: "mail",
+                        permission: "emails.view",
                     },
                     {
                         // SSA-only: pricing tiers + plan management.
-                        label: 'Pricing & Plans',
-                        route: 'ssa.plans.index',
-                        match: 'ssa.plans.*',
-                        icon: 'bank',
-                        permission: 'plans.view',
+                        label: "Pricing & Plans",
+                        route: "ssa.plans.index",
+                        match: "ssa.plans.*",
+                        icon: "bank",
+                        permission: "plans.view",
                     },
                 ],
             },
@@ -525,25 +525,25 @@ export const NAV_SECTIONS = [
      * Analytics, My Claims). Placing this section last guarantees that order.
      * ------------------------------------------------------------------ */
     {
-        heading: 'Account',
-        roles: ['Member'],
+        heading: "Account",
+        roles: ["Member"],
         rolesOnly: true,
         items: [
             {
-                label: 'Profile Manager',
-                route: 'profile.edit',
-                match: 'profile.*',
-                icon: 'users',
-                roles: ['Member'],
+                label: "Profile Manager",
+                route: "profile.edit",
+                match: "profile.*",
+                icon: "users",
+                roles: ["Member"],
                 rolesOnly: true,
             },
             {
                 // Theme Customizer is a per-user preference, so members get it too.
-                label: 'Theme Customizer',
-                route: 'settings.theme.edit',
-                match: 'settings.theme.*',
-                icon: 'settings',
-                roles: ['Member'],
+                label: "Theme Customizer",
+                route: "settings.theme.edit",
+                match: "settings.theme.*",
+                icon: "settings",
+                roles: ["Member"],
                 rolesOnly: true,
             },
         ],
@@ -557,19 +557,24 @@ export const NAV_SECTIONS = [
  *
  * @param {function(string|string[]): boolean} isAllowed - predicate from useCan
  */
-export function buildVisibleNav(sections, { can, hasRole, switched = false } = {}) {
-    if (typeof can !== 'function') return [];
+export function buildVisibleNav(
+    sections,
+    { can, hasRole, switched = false } = {},
+) {
+    if (typeof can !== "function") return [];
 
     const allows = (permission, roles, rolesOnly = false) => {
         if (Array.isArray(permission)) {
             // Array means ALL required.
-            if (!(permission.length > 0 && permission.every((p) => can(p)))) return false;
+            if (!(permission.length > 0 && permission.every((p) => can(p))))
+                return false;
         } else if (permission && !can(permission)) {
             return false;
         }
 
         if (Array.isArray(roles) && roles.length > 0) {
-            const matchesRole = typeof hasRole === 'function' && roles.some((r) => hasRole(r));
+            const matchesRole =
+                typeof hasRole === "function" && roles.some((r) => hasRole(r));
 
             // Exclusive gate: the item is shown ONLY to those roles. Everyone
             // else is hidden even if they passed the permission check above.
@@ -582,54 +587,73 @@ export function buildVisibleNav(sections, { can, hasRole, switched = false } = {
         return true;
     };
 
-    return sections
-        .map((section) => {
-            /*
-             * SECTION-LEVEL GATE.
-             *
-             * `tenantScoped` sections (Meal Management and friends) belong to a
-             * WORKSPACE and are normally hidden from the global SSA. But an SSA
-             * who has explicitly switched into an institution (session tenant
-             * set -> `switched === true`) IS operating inside that workspace and
-             * should see them. So a tenantScoped section is allowed for:
-             *   - the normal workspace roles (Institution Admin / Meal Manager), OR
-             *   - any user while they are in a switched tenant session.
-             */
-            if (section.tenantScoped) {
-                const normalRoles = allows(section.permission, section.roles, section.rolesOnly);
+    return (
+        sections
+            .map((section) => {
+                /*
+                 * SECTION-LEVEL GATE.
+                 *
+                 * `tenantScoped` sections (Meal Management and friends) belong to a
+                 * WORKSPACE and are normally hidden from the global SSA. But an SSA
+                 * who has explicitly switched into an institution (session tenant
+                 * set -> `switched === true`) IS operating inside that workspace and
+                 * should see them. So a tenantScoped section is allowed for:
+                 *   - the normal workspace roles (Institution Admin / Meal Manager), OR
+                 *   - any user while they are in a switched tenant session.
+                 */
+                if (section.tenantScoped) {
+                    const normalRoles = allows(
+                        section.permission,
+                        section.roles,
+                        section.rolesOnly,
+                    );
 
-                if (!normalRoles && !switched) {
+                    if (!normalRoles && !switched) {
+                        return null;
+                    }
+                } else if (
+                    !allows(
+                        section.permission,
+                        section.roles,
+                        section.rolesOnly,
+                    )
+                ) {
+                    // A whole section can be role-exclusive (member area, staff areas).
+                    // If it does not pass, it is dropped before items are considered.
                     return null;
                 }
-            } else if (!allows(section.permission, section.roles, section.rolesOnly)) {
-                // A whole section can be role-exclusive (member area, staff areas).
-                // If it does not pass, it is dropped before items are considered.
-                return null;
-            }
 
-            const items = (section.items || [])
-                .map((item) => {
-                    if (!allows(item.permission, item.roles, item.rolesOnly)) return null;
+                const items = (section.items || [])
+                    .map((item) => {
+                        if (
+                            !allows(item.permission, item.roles, item.rolesOnly)
+                        )
+                            return null;
 
-                    if (Array.isArray(item.children)) {
-                        const children = item.children.filter((child) =>
-                            allows(child.permission, child.roles, child.rolesOnly)
-                        );
+                        if (Array.isArray(item.children)) {
+                            const children = item.children.filter((child) =>
+                                allows(
+                                    child.permission,
+                                    child.roles,
+                                    child.rolesOnly,
+                                ),
+                            );
 
-                        // Group is only worth showing if it leads somewhere.
-                        if (children.length === 0) return null;
+                            // Group is only worth showing if it leads somewhere.
+                            if (children.length === 0) return null;
 
-                        return { ...item, children };
-                    }
+                            return { ...item, children };
+                        }
 
-                    return item;
-                })
-                .filter(Boolean);
+                        return item;
+                    })
+                    .filter(Boolean);
 
-            return { ...section, items };
-        })
-        // Drop sections the gate rejected (null) AND sections left empty after
-        // their items were pruned. Guarding against null is essential: a failed
-        // section-level role gate returns null, and `null.items` would throw.
-        .filter((section) => section && section.items.length > 0);
+                return { ...section, items };
+            })
+            // Drop sections the gate rejected (null) AND sections left empty after
+            // their items were pruned. Guarding against null is essential: a failed
+            // section-level role gate returns null, and `null.items` would throw.
+            .filter((section) => section && section.items.length > 0)
+    );
 }

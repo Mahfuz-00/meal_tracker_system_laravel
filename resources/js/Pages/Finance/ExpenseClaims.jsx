@@ -46,7 +46,7 @@ export default function ExpenseClaims({ hasMemberRecord = true, claims, kinds = 
 
     const openModal = () => { clearErrors(); reset(); setData({ ...EMPTY }); setOpen(true); };
     const close = () => { setOpen(false); reset(); };
-    const submit = (e) => { e.preventDefault(); post(route('claims.store'), { preserveScroll: true, onSuccess: () => close() }); };
+    const submit = (e) => { e.preventDefault(); post(route('expense-claims.store'), { preserveScroll: true, onSuccess: () => close() }); };
 
     return (
         <AuthenticatedLayout
